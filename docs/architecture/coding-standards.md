@@ -1,88 +1,102 @@
-# Coding Standards
+# Coding standards
 
-Conventions for writing consistent, readable code across the Docling Studio codebase.
+How we write code in Docling Studio. Linters and tests check most of these rules. Reviewers check the rest.
 
-## Python (Backend — `document-parser/`)
+## Backend (Python, `document-parser/`)
 
-### Tooling
+### Tools
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| **Ruff** | Linting + formatting | `ruff.toml` / `pyproject.toml` |
-| **pytest** | Testing | `pytest.ini` / `pyproject.toml` |
-| **mypy** (optional) | Type checking | — |
+| Tool | Role | Config |
+|------|------|--------|
+| Ruff | Lint and format | `[tool.ruff]` in `document-parser/pyproject.toml` |
+| pytest | Tests | `document-parser/pytest.ini` |
+| pytestarch | Layer rules, run as a test | `document-parser/tests/test_architecture.py` |
+
+The commands to run are in [CONTRIBUTING](https://github.com/scub-france/Docling-Studio/blob/main/CONTRIBUTING.md#before-you-push).
 
 ### Naming
 
 | Element | Convention | Example |
-|---------|-----------|---------|
+|---------|------------|---------|
 | Modules | `snake_case` | `analysis_repo.py` |
 | Classes | `PascalCase` | `AnalysisJob`, `DocumentConverter` |
-| Functions / methods | `snake_case` | `create_analysis()` |
-| Constants | `UPPER_SNAKE_CASE` | `MAX_CONCURRENT_ANALYSES` |
-| Private | `_leading_underscore` | `_build_converter()` |
+| Functions and methods | `snake_case` | `find_by_document()` |
+| Constants | `UPPER_SNAKE_CASE` | `DEFAULT_PAGE_HEIGHT` |
+| Private names | `_leading_underscore` | `_build_chunker()` |
 
-### Style Rules
+### Style
 
-- Max function length: **30 lines** (soft limit — justify longer ones)
-- Max file length: **300 lines** (split into modules if exceeded)
-- Imports: standard library → third-party → local, separated by blank lines
-- Type hints on all public functions
-- Docstrings only on non-obvious public APIs (don't state the obvious)
-- No `# type: ignore` without a comment explaining why
+- Keep functions to 30 lines at most. A longer one needs a reason.
+- Keep files to 300 lines at most. Split a file that grows past it.
+- Order imports: standard library, third-party, local. Ruff sorts them.
+- Add type hints to every public function.
+- Write a docstring only when the code is not obvious.
 
-### Architecture Rules
+### Layers
 
-- **Domain layer** (`domain/`): zero imports from `api/`, `persistence/`, `infra/`
-- **Persistence layer** (`persistence/`): only imports from `domain/`
-- **API layer** (`api/`): never imports from `persistence/` directly — goes through `services/`
-- **Services** (`services/`): orchestrate, don't implement — delegate to domain and infra
+The backend uses ports and adapters. The ports are `Protocol` classes, all in `domain/ports.py`. `infra/` and `persistence/` implement them. `bootstrap/` builds the adapters and passes them to the services.
 
-## TypeScript / Vue (Frontend — `frontend/src/`)
+`tests/test_architecture.py` fails when a layer imports something it must not:
 
-### Tooling
+| Layer | Must not import |
+|-------|-----------------|
+| `domain/` | `api`, `services`, `infra`, `persistence`, and the `fastapi`, `sqlalchemy`, `httpx` and `opensearchpy` libraries |
+| `services/` | `api`, `infra`, `persistence`, and `fastapi` |
+| `api/` | `infra`, `persistence` |
+| `infra/` | `api`, `services` |
+| `persistence/` | `api`, `services`, `infra` |
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| **ESLint** | Linting | `.eslintrc.*` |
-| **Prettier** | Formatting | `.prettierrc` |
-| **vue-tsc** | Type checking | `tsconfig.json` |
-| **Vitest** | Testing | `vitest.config.ts` |
+In practice: routes call services, and services reach adapters only through ports.
+
+### API contract
+
+- JSON uses camelCase. API models extend `_CamelModel` in `api/schemas.py`, which generates camelCase aliases. Python code stays snake_case.
+- One exception: an analysis's `pagesJson` is a JSON string whose keys stay snake_case (`page_number`, `self_ref`), because the backend builds it with `dataclasses.asdict()`.
+- Route design rules are in [Architecture](../architecture.md#api-rules).
+
+## Frontend (TypeScript and Vue, `frontend/src/`)
+
+### Tools
+
+| Tool | Role | Config |
+|------|------|--------|
+| ESLint | Lint | `frontend/eslint.config.js` (flat config) |
+| Prettier | Format | `frontend/.prettierrc` |
+| vue-tsc | Type check | `frontend/tsconfig.json` |
+| Vitest | Tests | `frontend/vite.config.js` (Vitest reads the Vite config) |
 
 ### Naming
 
 | Element | Convention | Example |
-|---------|-----------|---------|
-| Components | `PascalCase.vue` | `BboxOverlay.vue` |
+|---------|------------|---------|
+| Components | `PascalCase.vue` | `BboxCanvas.vue` |
 | Composables | `useCamelCase.ts` | `usePagination.ts` |
-| Stores | `camelCase.ts` | `analysisStore.ts` |
-| Types / Interfaces | `PascalCase` | `AnalysisJob`, `BboxRect` |
-| Constants | `UPPER_SNAKE_CASE` | `DEFAULT_PAGE_SIZE` |
-| CSS classes | `kebab-case` | `.bbox-overlay` |
+| Stores | `store.ts` in the feature folder | `features/analysis/store.ts`, which exports `useAnalysisStore` |
+| Types and interfaces | `PascalCase` | `Analysis`, `PageElement` |
+| Constants | `UPPER_SNAKE_CASE` | `PREVIEW_DPI` |
+| CSS classes | `kebab-case` | `.bbox-canvas` |
 | `data-e2e` attributes | `kebab-case` | `data-e2e="upload-zone"` |
 
-### Style Rules
+### Style
 
-- **Composition API** only (`<script setup lang="ts">`) — no Options API
-- One component per file
-- Props defined with `defineProps<T>()` (type-based, not runtime)
-- Emits defined with `defineEmits<T>()`
-- Pinia stores: one per feature, in the feature directory
-- No global state outside Pinia
-- API calls only in `api.ts` files (never in components or stores directly)
+- Use the Composition API: `<script setup lang="ts">`. No Options API.
+- Put one component in each file.
+- Type props and emits: `defineProps<T>()`, `defineEmits<T>()`.
+- A feature has one Pinia store at most, in `store.ts`. Shared state lives in stores. The only exception is `shared/appConfig.ts`.
+- Put HTTP calls in the feature's `api.ts`, built on `apiFetch` from `shared/api/http.ts`. Components and stores call those functions.
+- Put unit tests next to the code: `store.test.ts` beside `store.ts`. Tests that span features go in `src/__tests__/integration/`.
 
-### API Contract
+### Feature boundaries
 
-- Frontend sends/receives **camelCase** (Pydantic `alias_generator`)
-- Backend uses **snake_case** internally
-- `pages_json` is an exception — contains raw snake_case from `dataclasses.asdict()`
+Each feature lives in `src/features/<name>/`. Its `index.ts` lists what other features may use. A feature imports another feature only through `@/features/<name>`, or uses `@/shared`. It never reaches into another feature's `store`, `api` or `ui`.
 
-## Karate (E2E — `e2e/`)
+ESLint enforces this with the `no-restricted-imports` rule in `frontend/eslint.config.js`. Test files are exempt.
 
-See [e2e/CONVENTIONS.md](https://github.com/scub-france/Docling-Studio/blob/main/e2e/CONVENTIONS.md) for detailed rules.
+## End-to-end tests (Karate, `e2e/`)
 
-Key points:
-- Use `data-e2e` selectors, never CSS classes
-- Use `retry()`/`waitFor()`, never `Thread.sleep()` or `delay()`
-- Setup via API, verify via UI, cleanup via API
-- Tag tests: `@critical`, `@ui`, `@smoke`, `@regression`, `@e2e`
+The full rules are in [e2e/CONVENTIONS.md](https://github.com/scub-france/Docling-Studio/blob/main/e2e/CONVENTIONS.md). The essentials:
+
+- Select elements with `data-e2e`, never with CSS classes.
+- Wait with `waitFor()` or `waitUntil()`, never with `Thread.sleep()` or `delay()`.
+- Set up through the API, check through the UI, clean up through the API.
+- Tag tests: `@critical`, `@ui`, `@smoke`, `@regression` or `@e2e`.

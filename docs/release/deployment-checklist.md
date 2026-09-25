@@ -1,70 +1,73 @@
-# Deployment Checklist
+# Deployment checklist
 
-Checklist for deploying a new release of Docling Studio. Applies to both self-hosted and Hugging Face Space deployments.
+For a new version, once the tag `vX.Y.Z` exists and the release workflow has pushed the images. See [Maintainers](../maintainers.md) for the release itself.
 
-## Pre-Deploy
+## Before
 
-- [ ] Release branch merged to `main` via PR
-- [ ] Git tag `vX.Y.Z` created on `main`
-- [ ] Release audit passed (score >= 80, 0 CRITICAL) — see [docs/audit/master.md](../audit/master.md)
-- [ ] `CHANGELOG.md` section finalized with release date
-- [ ] `frontend/package.json` version matches the tag
-- [ ] All CI checks green on the tagged commit
-- [ ] Docker images built and pushed to `ghcr.io`:
-  - `X.Y.Z-remote`, `X.Y.Z-local`
-  - `X.Y-remote`, `X.Y-local`
-  - `latest-remote`, `latest-local`
+- [ ] The images are on `ghcr.io/scub-france/docling-studio`: `X.Y.Z-local` and `X.Y.Z-remote`.
+- [ ] `CHANGELOG.md` has the `[X.Y.Z]` section with its date.
+- [ ] Back up the database. There are no database migrations: a version that changes existing tables may not start on an older database.
 
-## Deploy — Self-Hosted (Docker Compose)
+## Self-hosted (Docker image)
 
-- [ ] Pull the new image:
-  ```bash
-  docker compose pull
-  ```
-- [ ] Check environment variables (`.env` or `docker-compose.override.yml`):
-  - `CONVERSION_ENGINE` (local / remote)
-  - `RATE_LIMIT_RPM`
-  - `MAX_FILE_SIZE_MB`
-  - `MAX_CONCURRENT_ANALYSES`
-- [ ] Start the stack:
-  ```bash
-  docker compose up -d --wait
-  ```
-- [ ] Verify health endpoint:
-  ```bash
-  curl -s http://localhost:3000/api/health | jq .
-  # Expected: {"status":"ok","engine":"...","version":"X.Y.Z","deploymentMode":"self-hosted"}
-  ```
+- [ ] Pull the image:
 
-## Deploy — Hugging Face Space
+    ```bash
+    docker pull ghcr.io/scub-france/docling-studio:X.Y.Z-local
+    ```
 
-- [ ] Upload to HF Space via `huggingface-cli`:
-  ```bash
-  huggingface-cli upload <space-id> . . --repo-type space
-  ```
-- [ ] Set environment variables in HF Space settings
-- [ ] Wait for build to complete in HF Space logs
-- [ ] Verify the app loads and health endpoint returns correct version
+- [ ] Remove the old container (`docker rm -f docling-studio`) and start the new one with the same volumes and variables:
 
-## Post-Deploy Smoke Test
+    ```bash
+    docker run -d --name docling-studio --restart unless-stopped -p 3000:3000 -v docling-data:/app/data -v docling-uploads:/app/uploads ghcr.io/scub-france/docling-studio:X.Y.Z-local
+    ```
 
-- [ ] Home page loads
-- [ ] Upload a PDF — document appears in the list
-- [ ] Run an analysis — completes without error
-- [ ] View results — markdown, HTML, bbox overlays render correctly
-- [ ] Download results
-- [ ] If local mode: test chunking
-- [ ] Check `/api/health` returns the new version
+- [ ] Check the health endpoint:
 
-## Rollback Triggers
+    ```bash
+    curl -s http://localhost:3000/api/health
+    ```
 
-Rollback immediately if any of these occur:
+    Expect `"status": "ok"`, `"database": "ok"` and `"version": "X.Y.Z"`.
 
-| Trigger | Action |
-|---------|--------|
-| Health endpoint returns error or wrong version | Rollback |
-| Upload or analysis fails on a previously working PDF | Rollback |
-| Frontend shows blank page or JS errors | Rollback |
-| Error rate > 5% in the first 15 minutes | Rollback |
+With Docker Compose, the app is built from source: check out the tag, then run `docker compose up -d --build`. `docker compose pull` does not fetch the Docling Studio images.
 
-For rollback procedure, see [rollback-playbook.md](rollback-playbook.md).
+## HuggingFace Space
+
+The Space is a Docker Space built from the repository root (the root `Dockerfile`, `local` target).
+
+Upload from a clean clone of the tag, never from your working copy: `--exclude` patterns only match at the root, so a working copy would also send `.venv`, `node_modules`, your local database and uploaded PDFs, and `.env`.
+
+- [ ] Clone the tag into a new folder:
+
+    ```bash
+    git clone --depth 1 --branch vX.Y.Z https://github.com/scub-france/Docling-Studio.git space-upload
+    cd space-upload
+    ```
+
+- [ ] Add the Space front matter at the top of its `README.md`: `sdk: docker`, `app_port: 3000`.
+- [ ] Upload with the `hf` CLI (`huggingface-cli` no longer works):
+
+    ```bash
+    hf upload <space-id> . . --repo-type space --exclude ".git/*"
+    ```
+
+- [ ] Check the Space variables: `DEPLOYMENT_MODE=huggingface`, `MAX_PAGE_COUNT=20`.
+- [ ] Wait for the build to finish, then check `/api/health` on the Space.
+
+## Smoke test
+
+- [ ] The app loads.
+- [ ] Import a PDF in **Docs**.
+- [ ] Run **New analysis** and wait for `COMPLETED` in **Analyses**.
+- [ ] Open the result: boxes, tree and Properties show up.
+- [ ] Download the Markdown.
+- [ ] If Ask is on: ask one question.
+
+## Roll back if
+
+- `/api/health` fails or shows the wrong version.
+- Import or analysis fails on a PDF that worked before.
+- The app shows a blank page.
+
+See the [rollback playbook](rollback-playbook.md).

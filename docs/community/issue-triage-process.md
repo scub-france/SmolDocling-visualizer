@@ -1,85 +1,40 @@
-# Issue Triage Process
-
-How we classify, prioritize, and manage GitHub issues.
+# Issue triage
 
 ## Labels
 
-### Type
+Only these labels exist on the repository.
 
-| Label | Description |
-|-------|-------------|
-| `bug` | Something is broken |
-| `feature` | New functionality |
-| `enhancement` | Improvement to existing functionality |
-| `docs` | Documentation only |
-| `question` | Support / how-to question |
-| `chore` | Tooling, CI, dependencies |
+| Kind | Labels |
+|------|--------|
+| Type | `bug`, `enhancement` (features too), `documentation`, `test`, `chore`, `question` |
+| Priority | `P0` must have, `P1` should have, `P2` nice to have |
+| Area | `backend`, `frontend`, `infra`, `architecture`, `search` |
+| Outcome | `duplicate`, `invalid`, `wontfix` |
+| Help | `good first issue`, `help wanted` |
+| Automatic | `docling-compat`: opened by the daily Docling compatibility check when the tests fail against the latest Docling |
 
-### Priority
+Issue titles start with a tag matching the type: `[BUG]`, `[FEATURE]`, `[ENHANCEMENT]`, `[DOC]`, `[TEST]`, `[CHORE]`.
 
-| Label | Response SLA | Fix SLA | Description |
-|-------|-------------|---------|-------------|
-| `priority: P0` | Same day | < 3 days | Critical — service down, data loss, security |
-| `priority: P1` | < 3 days | < 2 weeks | High — major feature broken, no workaround |
-| `priority: P2` | < 1 week | Next release | Medium — feature degraded, workaround exists |
-| `priority: P3` | < 2 weeks | Backlog | Low — minor, cosmetic, nice-to-have |
+## Triage a new issue
 
-### Status
-
-| Label | Description |
-|-------|-------------|
-| `needs-info` | Waiting for reporter to provide more details |
-| `confirmed` | Bug reproduced or feature accepted |
-| `good-first-issue` | Suitable for new contributors |
-| `help-wanted` | Open for community contribution |
-| `wont-fix` | Intentional behavior, out of scope, or won't be addressed |
-| `duplicate` | Already tracked in another issue |
-| `stale` | No activity for 30 days |
-
-### Component
-
-| Label | Maps to |
-|-------|---------|
-| `component: backend` | `document-parser/` |
-| `component: frontend` | `frontend/` |
-| `component: e2e` | `e2e/` |
-| `component: docker` | Docker / docker-compose |
-| `component: ci` | `.github/workflows/` |
-
-## Triage Workflow
-
-```
-New issue
-  │
-  ├─ Missing info? → label `needs-info`, comment asking for details
-  │                   (auto-close after 14 days if no response)
-  │
-  ├─ Duplicate? → label `duplicate`, link to original, close
-  │
-  ├─ Out of scope? → label `wont-fix`, explain why, close
-  │
-  └─ Valid issue
-      │
-      ├─ Add type label (bug / feature / enhancement / ...)
-      ├─ Add component label
-      ├─ Assess priority (P0 / P1 / P2 / P3)
-      ├─ If simple → add `good-first-issue`
-      └─ Assign to milestone (if applicable)
+```mermaid
+flowchart TD
+    New[New issue] --> Dup{Already reported?}
+    Dup -->|yes| D[Label duplicate, link the original, close]
+    Dup -->|no| Scope{In scope?}
+    Scope -->|no| W[Label wontfix, explain, close]
+    Scope -->|yes| Info{Enough information?}
+    Info -->|no| Ask[Ask in a comment]
+    Info -->|yes| Tag[Type + area + priority, then a milestone]
 ```
 
-## Stale Policy
+- Easy and well described? Add `good first issue`.
+- Information still missing after 30 days: close with a comment. It can be reopened.
 
-| Condition | Action |
-|-----------|--------|
-| No activity for **30 days** | Bot labels `stale` + comment |
-| No activity for **14 more days** | Bot closes the issue |
-| Reporter responds | `stale` label removed, timer resets |
+## Answering
 
-Issues labeled `priority: P0` or `priority: P1` are exempt from the stale policy.
+- Every issue gets an answer, even "thanks, we will look next week".
+- If it will not be fixed soon, say so.
+- Close with a comment that explains the outcome.
 
-## Response Expectations
-
-- **Every issue gets a response** (even if it's "thanks, we'll look at this next week")
-- Acknowledge within the SLA for the priority level
-- If you can't fix it soon, say so — don't leave reporters hanging
-- Close issues with a comment explaining the resolution
+There is no stale bot: closing old issues is done by hand.

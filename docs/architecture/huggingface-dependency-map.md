@@ -1,120 +1,80 @@
 # HuggingFace Hub dependency map
 
-Where the Docling Studio project touches `huggingface.co` and how to keep
-those touches contained.
+This page lists every place where Docling Studio downloads from `huggingface.co`, and the rule that keeps builds away from it.
 
-## Why this exists
+## Why it matters
 
-HuggingFace Hub anonymous downloads share a single rate-limit bucket per
-client IP. GitHub Actions shared runners pool IPs across all open-source
-projects on the platform, so any build that hits HF Hub anonymously
-during a release window will eventually 429 — regardless of how small
-the file or how unique your workflow.
+HuggingFace Hub limits anonymous downloads per IP address. GitHub-hosted runners share their IP addresses with many other projects, so a CI job that downloads a model can fail with HTTP 429 at any time. In 0.6.2 this broke the backend tests and the release gate.
 
-The audit `0.6.2 #10` traced two cascading CI failures (Backend tests
-and Release Gate E2E API) to model bakes / runtime fetches landing on
-those rate-limited paths. Fixing the immediate symptoms wasn't enough:
-the root cause is that **the project had no principled stance on which
-build paths are allowed to talk to HF Hub**. This document is that
-stance.
+The rule since then: a build downloads nothing from HuggingFace Hub unless it opts in.
 
-## Sanctioned HF Hub touch points
+## The one allowed build-time download
 
-There is exactly **one** sanctioned HF Hub touch point in our build /
-release toolchain:
+On every `v*` tag, `release.yml` builds the `local` image with `BAKE_MODELS=true`. The Docling models are downloaded at that moment and stored in the published image, `ghcr.io/scub-france/docling-studio:latest-local`.
 
-| Touch point | When | Why | Owner |
-|-------------|------|-----|-------|
-| `release.yml` → `latest-local` GHCR image (`BAKE_MODELS=true`) | On `v*` tag push | Publishes a self-contained image so end users get an instant first `/api/convert` from a single `docker pull` | Release pipeline |
+Two settings keep this contained:
 
-That single sanctioned touch is fenced by:
+- Both Dockerfiles declare `ARG BAKE_MODELS=false`, so every other build leaves it off.
+- `release.yml` turns it on for the `local` target only.
 
-- An explicit `build-args: BAKE_MODELS=true` in `release.yml`, scoped
-  by matrix condition to the `local` target only.
-- The Dockerfile `ARG BAKE_MODELS=false` default — any other build
-  inherits the off state.
+The embedding service has its own switch, `BAKE_MODEL`, also `false` by default. No pipeline turns it on.
 
-Every other build path defaults to `BAKE_MODELS=false` (Docling) and
-`BAKE_MODEL=false` (embedding-service). They never call HF Hub
-implicitly.
+## Where downloads happen
 
-## All HF call sites in the project
+### When an image is built
 
-### Build-time
+| File | Command | Runs when |
+|------|---------|-----------|
+| `Dockerfile`, `local` stage | `docling-tools models download` | `BAKE_MODELS=true` |
+| `document-parser/Dockerfile`, `local` stage | `docling-tools models download` | `BAKE_MODELS=true` |
+| `embedding-service/Dockerfile` | `SentenceTransformer('${EMBEDDING_MODEL}')` | `BAKE_MODEL=true` |
 
-| Location | Trigger | Default | Notes |
-|----------|---------|---------|-------|
-| `Dockerfile:103` (`docling-tools models download`) | `BAKE_MODELS=true` build-arg on `local` target | **false** | Only triggered by `release.yml` matrix `local`. |
-| `document-parser/Dockerfile:79` | same | **false** | Duplicate of the top-level Dockerfile path. |
-| `embedding-service/Dockerfile:24` (`SentenceTransformer('${EMBEDDING_MODEL}')`) | `BAKE_MODEL=true` build-arg | **false** | No release pipeline currently builds this with bake=true. |
+### When the app runs
 
-### Runtime (only when the relevant feature is enabled)
+| Code | Downloads | When |
+|------|-----------|------|
+| `document-parser/infra/local_chunker.py`, `HybridChunker` | The tokenizer `sentence-transformers/all-MiniLM-L6-v2` | First hybrid chunking, with either conversion engine |
+| `document-parser/infra/local_converter.py`, the Docling pipeline | Layout, table and OCR models | First analysis (`POST /api/analyses`) with `CONVERSION_ENGINE=local`. The copy baked into the image is not read: see [Use the published image](#use-the-published-image) |
+| `embedding-service/main.py`, `_load_model()` | The `EMBEDDING_MODEL` (default `all-MiniLM-L6-v2`) | Service start, if the model was not baked |
 
-| Location | Trigger | Notes |
-|----------|---------|-------|
-| `infra/local_chunker.py` → `HybridChunker(...)` | First chunking call when `CONVERSION_ENGINE=local` | Tokenizer `sentence-transformers/all-MiniLM-L6-v2`. Cached at `~/.cache/huggingface` inside the container — mount a volume to persist. |
-| `infra/local_converter.py` → Docling pipeline | First `/api/convert` when `CONVERSION_ENGINE=local` and `BAKE_MODELS=false` | Layout / OCR / table models. Same cache path. |
-| `embedding-service/main.py:33` | Service startup, if model not baked | Cached at `~/.cache/huggingface`. |
-| `mellea` / `docling-agent` (reasoning) | First `/api/reasoning` call when `WITH_REASONING=true` was built in **and** `RAG_PIPELINE_ENABLED=true` at runtime | LLM weights (IBM Granite). Reasoning is opt-in twice — at build (`WITH_REASONING`) and at runtime (`RAG_PIPELINE_ENABLED`). HF-free deployments don't enable it. |
+The chunker always runs in the backend, whatever the engine (`build_chunker()` in `document-parser/bootstrap/factories.py`). Hybrid is the default chunker. So the `remote` engine still downloads the tokenizer as soon as someone uses hybrid chunking. The hierarchical chunker needs no tokenizer.
 
-### Test-time
+Downloads are cached under `~/.cache` inside the container. Mount a volume there to keep them when the container is recreated.
 
-| Location | Status |
-|----------|--------|
-| `tests/test_chunking.py::test_rechunk_with_serve_document_json` | Fixed in `29ab575` — DocumentChunker port is mocked, no HF call. |
+Ask (`POST /api/documents/{id}/reasoning`) uses no HuggingFace model. The LLM runs in Ollama, `gpt-oss:20b` by default. Ask needs the reasoning packages, which the published `-local` image has included since 0.7.1 (`WITH_REASONING=true` in `release.yml`). It is off by default. Turn it on with `REASONING_ENABLED=true` or in **Settings**. A value saved in **Settings** wins.
 
-## How to deploy HF-free
+### In tests
 
-The remote conversion path has zero HF dependency from our side:
+Unit tests download nothing. Tests that chunk mock the `DocumentChunker` port, and the embedding service tests mock the model.
 
-1. Run the official `docling-serve` container (it ships with models
-   baked at the source by the docling-project — that's their problem
-   to keep on a stable mirror, not ours):
+## Run without downloading Docling models
 
-   ```yaml
-   # docker-compose.yml — already wired behind the `remote` profile
-   docling-serve:
-     profiles: ["remote"]
-     image: quay.io/docling-project/docling-serve-cpu:v1.21.0
-   ```
+Use the remote engine. Docling then runs in the official Docling Serve image, which ships with its models:
 
-2. Build the backend with `CONVERSION_MODE=remote`:
+```bash
+CONVERSION_MODE=remote docker compose --profile remote up -d --build
+```
 
-   ```bash
-   CONVERSION_MODE=remote docker compose --profile remote up -d --build
-   ```
+- `--profile remote` starts the `docling-serve` service from `docker-compose.yml`.
+- `CONVERSION_MODE=remote` builds the light `remote` backend image. Without it, Compose builds the `local` image.
+- The embedding service starts only with the `ingestion` profile. Leave that profile off, or mount a volume on the service's cache.
 
-3. Skip the embedding service (or run it with a mounted HF cache volume
-   if you want vector ingestion):
+Hybrid chunking still downloads its tokenizer on first use. Keep `~/.cache/huggingface` on a volume so this happens only once, or use the hierarchical chunker, which downloads nothing.
 
-   ```bash
-   docker compose --profile remote up -d --build  # no ingestion → no embedding container
-   ```
+The end-to-end jobs in `ci.yml` and `release-gate.yml` start the stack this way. Their `@regression` and `@e2e` API tests use the hybrid chunker, so these jobs still download the tokenizer.
 
-CI (`ci.yml`, `release-gate.yml`) follows this pattern exactly.
-
-## How to deploy with bake (HF touched at build, never at runtime)
-
-The official end-user path. Pull the published image:
+## Use the published image
 
 ```bash
 docker pull ghcr.io/scub-france/docling-studio:latest-local
 ```
 
-That image was built with `BAKE_MODELS=true` by `release.yml`. The HF
-call already happened at release time. Once the image is on your host,
-no HF call is needed.
+This image was built with `BAKE_MODELS=true`, so a copy of the Docling models is inside it, in `/home/appuser/.cache/docling/models`. The backend does not point Docling at that copy yet (`DOCLING_ARTIFACTS_PATH` is not set, and the converter passes no `artifacts_path`), so the first analysis still downloads the layout and table models. Hybrid chunking also downloads its tokenizer on first use.
 
-## Maintenance rule
+## Adding a component that needs a HuggingFace model
 
-When adding a new component that needs an HF model:
+1. Give its bake build argument a `false` default.
+2. If a published image must ship the model, turn the argument on in `release.yml`. Do not change the Dockerfile default.
+3. Add the new download to the tables on this page.
 
-1. Default to `false` on any bake build-arg.
-2. If you need a fast-first-call experience for a published end-user
-   image, add an explicit override in `release.yml` (do not flip the
-   Dockerfile default).
-3. Document the new touch point in the table above.
-
-Reviewers: any new build path (Dockerfile RUN, CI step, compose
-service) that calls HF Hub without an explicit opt-in build-arg is a
-red flag.
+Reviewers: a new Dockerfile `RUN`, CI step or Compose service that downloads from HuggingFace Hub without an opt-in build argument is a red flag.

@@ -1,105 +1,49 @@
-# Monitoring Checklist
+# Monitoring checklist
 
-What to monitor in a Docling Studio deployment.
-
-## Health Endpoint
-
-The primary monitoring signal is the health endpoint:
+## Health endpoint
 
 ```bash
 curl -s http://localhost:3000/api/health
 ```
 
-Expected response:
-```json
-{
-  "status": "ok",
-  "engine": "local",
-  "version": "0.3.0",
-  "deploymentMode": "self-hosted"
-}
-```
+Alert when it does not answer with HTTP 200 within 1 second, or when:
 
-**Alert if**: status != "ok", endpoint unreachable, or response time > 5s.
+- `status` is not `"ok"` (it becomes `"degraded"` when the database fails),
+- `database` is not `"ok"`.
 
-## Four Golden Signals
+The backend itself always answers 200. Through port 3000, nginx answers 502 when the backend is down.
 
-### 1. Latency
+The answer also gives `version`, `engine`, `deploymentMode`, the upload limits, and the flags `ingestionAvailable`, `reasoningAvailable`, `studioModeEnabled` and `ragPipelineEnabled`. Check `version` after each deploy.
 
-| Endpoint | Expected | Alert threshold |
-|----------|----------|-----------------|
-| `GET /api/health` | < 100ms | > 1s |
-| `POST /api/documents` (upload) | < 2s | > 10s |
-| `POST /api/analyses` (create) | < 500ms (queuing only) | > 5s |
-| `GET /api/analyses/:id` (results) | < 500ms | > 3s |
+No Docker healthcheck is defined for the app containers: use an external uptime check on `/api/health`.
 
-### 2. Traffic
+## What to watch
 
-| Metric | What to watch |
-|--------|---------------|
-| Requests per minute | Baseline for normal usage |
-| Uploads per hour | Capacity planning |
-| Concurrent analyses | Should stay <= `MAX_CONCURRENT_ANALYSES` |
+| Signal | How | Alert when |
+|--------|-----|------------|
+| `/api/health` | Uptime monitor | No 200 within 1 s |
+| Server errors (5xx) | nginx access log | Over 1% of requests |
+| Failed analyses | **Analyses** page, status `FAILED` | Over 10% |
+| Rate-limit hits (429) | nginx access log | Sudden spike |
+| CPU and memory | `docker stats` | Over 90% CPU or 85% memory for a while |
+| Disk | Size of the data and uploads volumes | Over 80% |
+| Restarts | `docker inspect --format '{{.RestartCount}}' docling-studio` | Above 0 |
 
-### 3. Errors
+The restart count only moves when the container runs with a restart policy, as in the [deployment checklist](../release/deployment-checklist.md) (`--restart unless-stopped`).
 
-| Signal | Alert threshold |
-|--------|-----------------|
-| HTTP 5xx rate | > 1% of requests |
-| Analysis failure rate | > 10% of analyses |
-| Rate limit hits (429) | Spike = possible abuse |
+The local engine is heavy: memory is the first limit to hit. Analyses beyond `MAX_CONCURRENT_ANALYSES` wait in `PENDING`.
 
-### 4. Saturation
+## Logs
 
-| Resource | Check command | Alert threshold |
-|----------|---------------|-----------------|
-| CPU | `docker stats` | > 90% sustained |
-| Memory | `docker stats` | > 85% (especially in local mode with PyTorch) |
-| Disk (SQLite + uploads) | `du -sh data/` | > 80% of volume |
-| Docker container restarts | `docker inspect --format='{{.RestartCount}}'` | > 0 |
+Single image:
 
-## Docker Health Check
+- `docker logs -f docling-studio` shows the backend.
+- nginx writes to files inside the container: `docker exec docling-studio tail -f /var/log/nginx/access.log /var/log/nginx/error.log`.
 
-The `docker-compose.yml` includes a built-in health check:
+Docker Compose: `docker compose logs -f document-parser` for the backend, `docker compose logs -f frontend` for nginx.
 
-```yaml
-healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-```
+Look for:
 
-Docker will mark the container as `unhealthy` after 3 consecutive failures.
-
-## Log Monitoring
-
-### Backend logs (uvicorn)
-
-```bash
-docker compose logs -f backend
-```
-
-Watch for:
-- `ERROR` or `CRITICAL` log levels
-- `TimeoutError` from Docling processing
-- `sqlite3.OperationalError` (DB issues)
-- `429 Too Many Requests` spikes
-
-### Frontend logs (nginx)
-
-```bash
-docker compose logs -f frontend
-```
-
-Watch for:
-- `502 Bad Gateway` (backend down)
-- `413 Request Entity Too Large` (file size limit)
-
-## Recommended Setup
-
-For production deployments, consider:
-
-1. **Uptime monitor** — ping `/api/health` every 60s (UptimeRobot, Healthchecks.io)
-2. **Log aggregation** — ship Docker logs to a central service
-3. **Alerting** — notify on container restart, health check failure, or error spike
+- `ERROR` lines, `TimeoutError` from Docling, `sqlite3.OperationalError` in the backend,
+- `502` in nginx (backend down),
+- `413` in nginx (upload over `NGINX_MAX_BODY_SIZE`).

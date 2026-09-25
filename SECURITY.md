@@ -1,75 +1,51 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
+
+Only the latest minor version gets security fixes.
 
 | Version | Supported |
 |---------|-----------|
-| 0.3.x   | Yes       |
-| < 0.3   | No        |
+| 0.7.x | Yes |
+| < 0.7 | No |
 
-## Reporting a Vulnerability
+## Report a vulnerability
 
-**Do NOT open a public GitHub issue for security vulnerabilities.**
+Do not open a public issue.
 
-Instead, please report them privately:
+Report it privately on GitHub: **Security** tab, then **Report a vulnerability** ([direct link](https://github.com/scub-france/Docling-Studio/security/advisories/new)).
 
-1. **Email**: Send a detailed report to **[INSERT SECURITY EMAIL]**
-2. **GitHub Security Advisory**: Use [GitHub's private vulnerability reporting](https://github.com/scub-france/Docling-Studio/security/advisories/new)
+Please include:
 
-### What to include
+- what the problem is and how to reproduce it,
+- the part affected (`document-parser/`, `frontend/`, the Docker images…),
+- what an attacker could do with it,
+- a fix idea, if you have one.
 
-- Description of the vulnerability
-- Steps to reproduce
-- Affected component(s): `document-parser/`, `frontend/`, `docker-compose.yml`, etc.
-- Impact assessment (data exposure, denial of service, privilege escalation, etc.)
-- Suggested fix (if any)
+## What happens next
 
-### Response timeline
+| Step | Within |
+|------|--------|
+| We confirm we received it | 48 hours |
+| We assess the severity | 7 days |
+| We fix it | 14 days if critical, 30 days otherwise |
+| We publish the fix and a GitHub Security Advisory | When the fix is released |
 
-| Step | SLA |
-|------|-----|
-| Acknowledgment | < 48 hours |
-| Initial assessment | < 7 days |
-| Fix developed | < 14 days (critical), < 30 days (other) |
-| Public disclosure | After fix is released |
+The fix is prepared in the private fork attached to the advisory, so nothing is public before the release. We credit you in the advisory, unless you prefer not.
 
-### Process
+## For contributors
 
-1. We acknowledge your report and assign a severity level
-2. We develop a fix in a **private branch** (never pushed publicly before the advisory)
-3. We release the fix and publish a GitHub Security Advisory
-4. We credit the reporter (unless they prefer anonymity)
+- Never commit secrets, keys or passwords.
+- Validate user input at the API boundary.
+- Keep dependencies up to date: in `document-parser/`, `uv pip install pip-audit` then `uv run pip-audit`; in `frontend/`, `npm audit`.
 
-## Security Best Practices (for contributors)
+## Reasoning settings and outbound requests
 
-- Never commit secrets, API keys, or credentials
-- Never disable CORS or security middleware without review
-- Validate all user input at the API boundary
-- Keep dependencies up to date (`pip audit`, `npm audit`)
-- Follow the [OWASP Top 10](https://owasp.org/www-project-top-ten/) guidelines
+**Settings** › **Reasoning** lets a user set the Ollama URL, test it (`POST /api/config/reasoning/test`) and save it. Ask then sends its requests to that URL. These are outbound requests chosen by the user, so:
 
-## Runtime reasoning config & SSRF
+- On a HuggingFace deployment (`DEPLOYMENT_MODE=huggingface`), writing the settings and testing the connection are refused with `403`.
+- Before connecting, **Test connection** resolves the host and refuses link-local addresses (including the cloud metadata endpoint `169.254.169.254` and `fe80::/10`), multicast, reserved and unspecified addresses. A refused target gets no traffic at all.
+- **Save** does not run that check: it only requires an http(s) URL. Anyone who can reach the settings can point Ask at any address the server can reach.
+- Loopback and private LAN addresses are allowed on purpose: that is where Ollama usually runs.
 
-The reasoning configuration can be edited at runtime from the admin panel
-(`/settings`), which lets a user set the Ollama host URL and probe it via
-`POST /api/config/reasoning/test`. This is a user-supplied outbound request,
-so the trust model is:
-
-- **HuggingFace deployment (public surface)**: config writes and the
-  connection probe are refused with `403`. The reasoning config is read-only
-  there — the public endpoint never issues an outbound request on behalf of a
-  visitor.
-- **SSRF guard on the probe**: before any request, the probe resolves the
-  target hostname and refuses addresses that are never a legitimate Ollama —
-  link-local (including the cloud metadata endpoint `169.254.169.254` and
-  `fe80::/10`), multicast, reserved, and unspecified (`0.0.0.0`, `::`). Blocked
-  targets produce no network traffic at all.
-- **Loopback / LAN are allowed on purpose**: the legitimate target — an Ollama
-  daemon — runs on loopback or the private LAN by default
-  (`http://localhost:11434`). Blocking loopback / RFC1918 would break the
-  normal feature, so those ranges are intentionally permitted.
-- **Self-hosted exposure is a deployment responsibility**: because loopback and
-  the LAN are reachable by design, a self-hosted instance exposed to untrusted
-  networks must be protected at the network layer (e.g. an authenticated
-  reverse-proxy in front of the parser). The application-level guard only stops
-  metadata / link-local / reserved targets, not access to your own LAN.
+The app has no login. A self-hosted instance open to untrusted networks must be protected in front of it, for example by a reverse proxy with authentication.

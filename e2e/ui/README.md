@@ -1,94 +1,60 @@
-# E2E UI Tests — Karate UI
+# UI end-to-end tests
 
-Browser-based end-to-end tests for Docling Studio using [Karate UI](https://karatelabs.github.io/karate/karate-core/#ui-automation) (Chrome headless).
+These tests drive Docling Studio in a headless Chrome with [Karate UI](https://github.com/karatelabs/karate/tree/master/karate-core). Most of them create their data through the API, check the page, then delete the data through the API. To write a test, follow [CONVENTIONS.md](../CONVENTIONS.md).
 
 ## Prerequisites
 
-- **JDK 17+** (e.g. `brew install openjdk@17`)
-- **Maven 3.9+** (e.g. `brew install maven`)
-- **Google Chrome** (headless, auto-detected)
-- **Python 3.12+** (for test data generation)
-- **Docker** (for running the full stack)
+- Java 17 or newer, Maven, and Google Chrome.
+- Python 3, to generate the test PDFs.
+- Docker, to run the app.
 
-## Quick start
+## Run the tests
+
+Run the commands from the repository root.
 
 ```bash
-# 1. Generate test PDFs (from repo root)
+# 1. Generate the test PDFs (again after a clean)
+pip install fpdf2 pypdfium2
 python e2e/generate-test-data.py
 
-# 2. Start the stack
-docker compose up -d --wait
+# 2. Start the app as CI does, then wait until Docling Serve converts a PDF
+STUDIO_MODE_ENABLED=true RATE_LIMIT_RPM=0 CONVERSION_MODE=remote \
+  docker compose --profile remote up -d --build --wait
+bash .github/scripts/warmup-docling-serve.sh
 
-# 3. Run all UI tests
-mvn test -f e2e/ui/pom.xml
+# 3. Run the @critical tests (the CI scope), or every @ui test
+mvn test -f e2e/ui/pom.xml -Dtest='UIRunner#testCritical' -DbaseUrl=http://localhost:3000
+mvn test -f e2e/ui/pom.xml -Dtest='UIRunner#testLocal' -DbaseUrl=http://localhost:3000
 
-# 4. Tear down
-docker compose down
+# 4. Stop the app
+docker compose --profile remote down
 ```
 
-## Run by tag
+- `STUDIO_MODE_ENABLED=true`: most `@critical` tests open `/studio`, which redirects to `/docs` without it.
+- `RATE_LIMIT_RPM=0` turns off the rate limit, 100 requests a minute by default.
+- `baseUrl` (the API) defaults to `http://localhost:8000`, and `uiBaseUrl` (the pages) to `http://localhost:3000`. These are the ports when you run the app without Docker. Compose publishes only port 3000, hence `-DbaseUrl`.
+- Always pick a runner method with `-Dtest`. Without it, Maven also runs `DemoRunner`, which fails without `-DdemoDocId`.
 
-```bash
-# Critical only — CI scope (~1min30)
-mvn test -f e2e/ui/pom.xml -Dkarate.options="--tags @critical"
+## Where the tests are
 
-# All UI tests — local scope (~3min)
-mvn test -f e2e/ui/pom.xml -Dkarate.options="--tags @ui"
-```
+Features are in `src/test/resources/`, one folder per area:
 
-## Custom URLs
+- `documents/`: upload, delete, upload errors, and the document workspace.
+- `analyses/`: running an analysis, batch progress, rechunking, pipeline options, the saved analysis page.
+- `navigation/`: sidebar, language switch, reasoning flag.
+- `workflows/`: one full journey in the browser.
+- `common/helpers/`: API helpers (upload, analyze, cleanup) and browser helpers (prefix `ui-`).
+- `common/data/generated/`: the test PDFs (not in git).
+- `demo/`: a scripted walkthrough for a video, run only by `DemoRunner`. It is not a test.
 
-```bash
-mvn test -f e2e/ui/pom.xml -DbaseUrl=http://your-host:8000 -DuiBaseUrl=http://your-host:3000
-```
+`UIRunner.java` has three methods. `testAll` runs every feature in the first four folders, `testLocal` the `@ui` ones, and `testCritical` the `@critical` ones in `documents/` and `analyses/`. To list the critical features, run `grep -rlE '^@.*critical' e2e/ui/src/test/resources`.
 
-## Structure
+## Tags in CI
 
-```
-e2e/ui/
-├── pom.xml                     # Maven + Karate dependency
-├── src/test/java/
-│   └── UIRunner.java           # JUnit5 Karate runner
-└── src/test/resources/
-    ├── karate-config.js        # URLs, timeouts, Chrome driver config
-    ├── common/helpers/
-    │   ├── upload.feature       # API helper — upload (setup)
-    │   ├── analyze.feature      # API helper — analyze (setup)
-    │   ├── cleanup.feature      # API helper — delete (teardown)
-    │   ├── ui-upload.feature    # UI helper — upload via file input
-    │   └── ui-wait-analysis.feature  # UI helper — poll for completion
-    ├── documents/               # @critical @ui
-    │   ├── upload.feature       # Upload + preview
-    │   ├── delete.feature       # Delete via hover + click
-    │   └── error-states.feature # Non-PDF rejection, hints
-    ├── analyses/                # @critical @ui
-    │   ├── analysis.feature     # Run analysis, verify tabs
-    │   ├── batch-progress.feature  # Progress bar on multi-page
-    │   ├── rechunk.feature      # Prepare mode, rechunk
-    │   ├── analysis-detail.feature   # Saved analysis page (@regression)
-    │   └── pipeline-options.feature  # OCR, table mode toggles
-    ├── navigation/              # @ui
-    │   ├── sidebar.feature      # Sidebar navigation
-    │   └── i18n.feature         # FR/EN language switch
-    └── workflows/               # @ui
-        └── full-ui-path.feature # Complete happy path via browser
-```
+CI runs `@critical` only: `ci.yml` on every push to `main`, and `release-gate.yml` on every pull request to `main`. Both call `mvn test` with `-Dkarate.options="--tags @critical"` and no `-Dtest`. The `--tags` option replaces the tags of each `UIRunner` method, so every critical scenario runs three times.
 
-## Tags
-
-| Tag | Scope | When |
-|-----|-------|------|
-| `@critical` | 5 features, 6 scenarios | CI on `main` branch |
-| `@ui` | All UI features | Local development |
-
-## Design patterns
-
-- **Setup via API, verify via UI** — fast setup with API helpers, then browser assertions
-- **Cleanup via API** — `cleanup.feature` deletes test data after each scenario
-- **Polling with `optional()`** — graceful handling of fast completions (no `waitFor` on spinners that may flash)
-- **`data-e2e` selectors** — `[data-e2e=doc-item]` instead of `.doc-item` — decoupled from CSS, never breaks on style refactors
-- **`karate.sizeOf()` for counts** — `karate.sizeOf(locateAll('[data-e2e=xxx]'))` instead of raw `.length` or `script()`
+Every feature also has `@ui`. Some have `@regression`, or `@reasoning-off` on scenarios that expect Ask to be off (the default). No CI job selects these tags, so tests outside `@critical` may be out of date.
 
 ## Reports
 
-After a run, Karate HTML reports are in `e2e/ui/target/karate-reports/`.
+After a run, open `e2e/ui/target/karate-reports/karate-summary.html`. A failed step adds a screenshot. CI uploads this folder as the `karate-ui-reports` artifact.
