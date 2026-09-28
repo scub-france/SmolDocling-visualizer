@@ -81,7 +81,7 @@ Docling converts a document in one call, bounds memory with internal page batche
 - Frontend:
   - `frontend/src/features/analysis/store.ts`: `startPolling`, with `MAX_POLLING_DURATION` (15 min) armed at launch.
   - `frontend/src/features/analysis/progress.ts` and `ui/AnalysisProgressBar.vue` (#344): the strip under the document header.
-- Config and docs: `docker-compose.yml`, `docker-compose.dev.yml`, `.env.example`, `docs/configuration.md`, `docs/troubleshooting.md`, `docs/user-guide.md`.
+- Config and docs: `docker-compose.yml`, `docker-compose.dev.yml`, `.env.example`, `docs/configuration.md`, `docs/troubleshooting.md`, `docs/user-guide.md`, `docs/architecture.md`, `docs/operations/monitoring-checklist.md`.
 - E2E: `e2e/api/src/test/resources/analyses/batch-progress.feature` accepts both a batched and a single-pass conversion.
 
 ### Hexagonal constraints
@@ -219,7 +219,8 @@ Nothing else changes: the Analysis library of #354 already shows `PENDING`.
 - Docs:
   - `configuration.md`: the timeouts and their derivation, `BATCH_PAGE_SIZE` at 0, `MAX_CONCURRENT_ANALYSES` capped at one conversion with the local engine, the minimum Docling Serve.
   - `troubleshooting.md`: why an analysis stays `PENDING`, and what "Server busy" still means.
-  - `user-guide.md`: its sentences on the progress bar and on batch analysis are fixed in their own PRs (#357, #355), which touch the same lines, so they no longer promise a percentage.
+  - `user-guide.md`: its sentences on the progress bar (#357) and on batch analysis (#355) no longer promise a percentage or three analyses at a time. Both PRs were merged first, so the fix lands here.
+  - `architecture.md` and `operations/monitoring-checklist.md`: an analysis waits in `PENDING` until the engine can take it, one at a time with the local engine.
   - `.env.example` and the CHANGELOG.
 
 ## 6. Alternatives considered

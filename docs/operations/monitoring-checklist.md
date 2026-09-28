@@ -31,7 +31,7 @@ No Docker healthcheck is defined for the app containers: use an external uptime 
 
 The restart count only moves when the container runs with a restart policy, as in the [deployment checklist](../release/deployment-checklist.md) (`--restart unless-stopped`).
 
-The local engine is heavy: memory is the first limit to hit. Analyses beyond `MAX_CONCURRENT_ANALYSES` wait in `PENDING`.
+The local engine is heavy: memory is the first limit to hit. It converts one PDF at a time, and the other analyses wait in `PENDING`.
 
 ## Logs
 

@@ -109,7 +109,7 @@ stateDiagram-v2
     class FAILED red
 ```
 
-An analysis waits in `PENDING` until one of the `MAX_CONCURRENT_ANALYSES` slots is free. The result is stored in SQLite: Markdown and HTML, the pages with their boxes, and the full Docling document as JSON.
+An analysis waits in `PENDING` until the engine can take it: one at a time with the local engine, up to `MAX_CONCURRENT_ANALYSES` with Docling Serve, which also queues them on its side. The result is stored in SQLite: Markdown and HTML, the pages with their boxes, and the full Docling document as JSON.
 
 ### Ask
 

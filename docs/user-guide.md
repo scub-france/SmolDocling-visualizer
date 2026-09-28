@@ -46,7 +46,7 @@ To look at the pages first, open the document from **Docs**. It shows in the sam
 ## Run an analysis
 
 1. In **Docs**, click **Open visualization** on the document.
-2. Click **New analysis**. While Docling works, a bar under the title shows how far it is: the percentage and the pages done for a long PDF, the time elapsed otherwise. When the analysis completes, its result opens by itself. If it fails, the reason shows next to the button.
+2. Click **New analysis**. A bar under the title shows **Queued** while the analysis waits for its turn, then how long it has been running. When the analysis completes, its result opens by itself. If it fails, the reason shows next to the button.
 
 There are no options to choose here. The server settings apply: OCR on, table structure on, and the table mode set by the admin ("accurate" by default).
 
@@ -55,7 +55,7 @@ There are no options to choose here. The server settings apply: OCR on, table st
 1. In **Docs**, tick the documents to analyze. The box in the header ticks every listed document.
 2. Click **Analyze**. One analysis starts per document, and **Analyses** opens.
 
-Their status updates by itself until they end, with the percentage of long PDFs. The server runs three analyses at a time and queues the others. If some analyses cannot start, **Docs** stays open and lists them with the reason. They stay ticked, so you can try again.
+Their status updates by itself: `PENDING` while they wait for their turn, then `RUNNING`, then `COMPLETED` or `FAILED`. If some analyses cannot start, **Docs** stays open and lists them with the reason. They stay ticked, so you can try again.
 
 ## Open the result
 
