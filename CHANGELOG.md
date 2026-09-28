@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
-- **Analyses no longer lose pages silently** (#348): when Docling hit its document timeout (`DOCUMENT_TIMEOUT`, 120 s by default), or could not read some pages, it returned a partial document, and the analysis showed as complete with those pages empty. On a laptop, a 28-page paper stopped after page 19. The analysis now fails with a message that names the missing pages, and says what to change when the timeout is the cause. This covers the local engine and Docling Serve, and batched analyses too.
+- **Analyses no longer lose pages silently** (#348): when Docling hit its document timeout (`DOCUMENT_TIMEOUT`, 120 s by default before #349), or could not read some pages, it returned a partial document, and the analysis showed as complete with those pages empty. On a laptop, a 28-page paper stopped after page 19. The analysis now fails with a message that names the missing pages, and says what to change when the timeout is the cause. This covers the local engine and Docling Serve, and batched analyses too.
 
 ### Deprecated
 

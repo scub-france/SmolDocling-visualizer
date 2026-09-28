@@ -27,8 +27,8 @@ class TestIncompleteConversionError:
         assert str(error).startswith(
             "Docling stopped at its document timeout: pages 20-28 were not converted."
         )
-        assert "DOCUMENT_TIMEOUT" in str(error)
-        assert "BATCH_PAGE_SIZE" in str(error)
+        # DOCUMENT_TIMEOUT follows CONVERSION_TIMEOUT since #349.
+        assert str(error).endswith("Raise CONVERSION_TIMEOUT to give it more time.")
 
     def test_names_the_pages_docling_could_not_read(self):
         error = IncompleteConversionError([7, 3], timed_out=False)

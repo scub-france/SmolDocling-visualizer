@@ -53,8 +53,8 @@ class IncompleteConversionError(DomainError):
         if timed_out:
             message = (
                 f"Docling stopped at its document timeout: {which} "
-                f"{'was' if single else 'were'} not converted. Raise DOCUMENT_TIMEOUT, "
-                "or set BATCH_PAGE_SIZE so each batch gets its own time budget."
+                f"{'was' if single else 'were'} not converted. Raise CONVERSION_TIMEOUT "
+                "to give it more time."
             )
         else:
             message = (

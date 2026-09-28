@@ -23,7 +23,7 @@ Docling downloads its models from HuggingFace during the first analysis, with th
 
 ## An analysis fails with "Docling stopped at its document timeout"
 
-Docling gives a conversion `DOCUMENT_TIMEOUT` seconds (120 by default) and drops the pages it has not reached by then. Studio fails the analysis instead of keeping an incomplete one. Set `BATCH_PAGE_SIZE` (for example `10`) so that each batch of pages gets its own budget, or raise `DOCUMENT_TIMEOUT`, keeping `DOCUMENT_TIMEOUT` < `LOCK_TIMEOUT` < `CONVERSION_TIMEOUT`. See [Configuration](configuration.md).
+Docling gives a conversion `DOCUMENT_TIMEOUT` seconds (two minutes less than `CONVERSION_TIMEOUT` by default) and drops the pages it has not reached by then. Studio fails the analysis instead of keeping an incomplete one. Raise `CONVERSION_TIMEOUT`: `DOCUMENT_TIMEOUT` and `LOCK_TIMEOUT` follow it, unless you set them yourself. See [Configuration](configuration.md#analysis).
 
 "Docling could not convert pages …" means the PDF is damaged on those pages. Export it again, or repair it, and analyse the new file.
 
