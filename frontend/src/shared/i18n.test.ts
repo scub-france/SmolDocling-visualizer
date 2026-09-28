@@ -90,6 +90,16 @@ describe('useI18n', () => {
     expect(t('analyses.progressElapsed', { elapsed: '1:23' })).toBe('Analyzing · 1:23')
   })
 
+  it('has the document preview error in French and English (#352)', () => {
+    const { t } = useI18n()
+    expect(t('workspace.previewUnavailable')).toBe(
+      'Aperçu indisponible : le PDF ne peut pas être lu.',
+    )
+
+    appLocale.value = 'en'
+    expect(t('workspace.previewUnavailable')).toBe('Preview unavailable: the PDF cannot be read.')
+  })
+
   it('has the Parse view show-all keys in French', () => {
     const { t } = useI18n()
     expect(t('parse.showAll')).toBe('Tout afficher')
@@ -166,5 +176,25 @@ describe('useI18n', () => {
     expect(t('layers.showBoxes')).toBe('Show boxes')
     expect(t('layers.hideBoxesHint')).toBe('Hide every bbox to see the bare page')
     expect(t('layers.showBoxesHint')).toBe('Show every bbox again')
+  })
+
+  it('has the batch analysis keys in French (#354)', () => {
+    const { t } = useI18n()
+    expect(t('docs.selectRow', { name: 'a.pdf' })).toBe('Sélectionner a.pdf')
+    expect(t('docs.selectedCount', { n: 2 })).toBe('2 sélectionné(s)')
+    expect(t('docs.analyzeSelected')).toBe('Analyser')
+    expect(t('docs.batchFailed')).toBe("Ces analyses n'ont pas pu démarrer :")
+    expect(t('analyses.statusPercent', { percent: 40 })).toBe('40 %')
+  })
+
+  it('has the batch analysis keys in English (#354)', () => {
+    appLocale.value = 'en'
+
+    const { t } = useI18n()
+    expect(t('docs.selectRow', { name: 'a.pdf' })).toBe('Select a.pdf')
+    expect(t('docs.selectedCount', { n: 2 })).toBe('2 selected')
+    expect(t('docs.analyzeSelected')).toBe('Analyze')
+    expect(t('docs.batchFailed')).toBe('These analyses could not start:')
+    expect(t('analyses.statusPercent', { percent: 40 })).toBe('40%')
   })
 })

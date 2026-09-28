@@ -91,6 +91,13 @@ const messages: Messages = {
     'docs.colUpdated': 'Mis à jour',
     'docs.filterSearch': 'Rechercher…',
     'docs.filterClear': 'Effacer les filtres',
+    'docs.selectAll': 'Tout sélectionner',
+    'docs.selectRow': 'Sélectionner {name}',
+    'docs.selectedCount': '{n} sélectionné(s)',
+    'docs.analyzeSelected': 'Analyser',
+    'docs.analyzeStarting': 'Lancement…',
+    'docs.clearSelection': 'Désélectionner',
+    'docs.batchFailed': "Ces analyses n'ont pas pu démarrer :",
     'docs.openVisualization': 'Ouvrir la visualisation',
     'docs.selected': '{n} sélectionné(s)',
     'docs.download': 'Télécharger',
@@ -264,6 +271,7 @@ const messages: Messages = {
     'analyses.progressQueued': 'En attente',
     'analyses.progressPages': '{percent} % · page {done} / {total}',
     'analyses.progressElapsed': 'Analyse en cours · {elapsed}',
+    'analyses.statusPercent': '{percent} %',
     'history.tabAnalyses': 'Analyses',
     'history.tabDocuments': 'Documents',
     'history.empty': 'Aucune analyse. Analysez votre premier document pour commencer.',
@@ -392,6 +400,7 @@ const messages: Messages = {
     // in #264, Compare slot replaced by Ingest in #225)
     'workspace.tabs.parse': 'Parse',
     'workspace.backToLibrary': 'Retour \u00e0 la biblioth\u00e8que',
+    'workspace.previewUnavailable': 'Aper\u00e7u indisponible : le PDF ne peut pas \u00eatre lu.',
     'workspace.modeDisabled': 'Mode d\u00e9sactiv\u00e9 pour ce d\u00e9ploiement',
 
     // Parse view (#264) \u2014 Docling extraction graph
@@ -737,6 +746,13 @@ const messages: Messages = {
     'docs.colUpdated': 'Updated',
     'docs.filterSearch': 'Search…',
     'docs.filterClear': 'Clear filters',
+    'docs.selectAll': 'Select all',
+    'docs.selectRow': 'Select {name}',
+    'docs.selectedCount': '{n} selected',
+    'docs.analyzeSelected': 'Analyze',
+    'docs.analyzeStarting': 'Starting…',
+    'docs.clearSelection': 'Clear selection',
+    'docs.batchFailed': 'These analyses could not start:',
     'docs.openVisualization': 'Open visualization',
     'docs.selected': '{n} selected',
     'docs.download': 'Download',
@@ -900,6 +916,7 @@ const messages: Messages = {
     'analyses.progressQueued': 'Queued',
     'analyses.progressPages': '{percent}% · page {done} / {total}',
     'analyses.progressElapsed': 'Analyzing · {elapsed}',
+    'analyses.statusPercent': '{percent}%',
     'history.tabAnalyses': 'Analyses',
     'history.tabDocuments': 'Documents',
     'history.empty': 'No analyses yet. Analyze your first document to get started.',
@@ -1022,6 +1039,7 @@ const messages: Messages = {
     // in #264, Compare slot replaced by Ingest in #225)
     'workspace.tabs.parse': 'Parse',
     'workspace.backToLibrary': 'Back to library',
+    'workspace.previewUnavailable': 'Preview unavailable: the PDF cannot be read.',
     'workspace.modeDisabled': 'Mode disabled for this deployment',
 
     // Parse view (#264) — Docling extraction graph

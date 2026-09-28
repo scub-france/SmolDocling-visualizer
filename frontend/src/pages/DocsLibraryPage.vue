@@ -27,10 +27,57 @@
 
       <!-- Table (#211) -->
       <template v-else-if="docStore.documents.length">
+        <!-- Batch analysis (#354) -->
+        <div v-if="selected.size" class="bulk-bar" data-e2e="docs-bulk-bar">
+          <span class="bulk-count">{{ t('docs.selectedCount', { n: selected.size }) }}</span>
+          <button
+            type="button"
+            class="btn-primary"
+            :disabled="launching"
+            data-e2e="docs-analyze-selected"
+            @click="analyzeSelected"
+          >
+            {{ launching ? t('docs.analyzeStarting') : t('docs.analyzeSelected') }}
+          </button>
+          <button
+            type="button"
+            class="btn-secondary"
+            :disabled="launching"
+            data-e2e="docs-clear-selection"
+            @click="clearSelection"
+          >
+            {{ t('docs.clearSelection') }}
+          </button>
+        </div>
+        <div
+          v-if="launchFailures.length"
+          class="flash flash--error"
+          role="alert"
+          data-e2e="docs-batch-failures"
+        >
+          <p>{{ t('docs.batchFailed') }}</p>
+          <ul>
+            <li v-for="failure in launchFailures" :key="failure.documentId">
+              {{ filenameOf(failure.documentId) }}: {{ failure.error }}
+            </li>
+          </ul>
+        </div>
+
         <div class="table-wrapper">
           <table class="doc-table" data-e2e="docs-table">
             <thead>
               <tr>
+                <th class="col-select">
+                  <input
+                    type="checkbox"
+                    class="select-box"
+                    :checked="selection === 'all'"
+                    :indeterminate="selection === 'some'"
+                    :aria-label="t('docs.selectAll')"
+                    data-e2e="docs-select-all"
+                    @change="onToggleListed"
+                  />
+                </th>
                 <th>{{ t('docs.colName') }}</th>
                 <th class="col-updated">{{ t('docs.colUpdated') }}</th>
                 <th class="col-download">
@@ -44,8 +91,19 @@
                 :key="doc.id"
                 class="doc-row"
                 data-e2e="doc-row"
+                :data-doc-id="doc.id"
                 @click="openDoc(doc.id)"
               >
+                <td class="col-select" @click.stop>
+                  <input
+                    type="checkbox"
+                    class="select-box"
+                    :checked="selected.has(doc.id)"
+                    :aria-label="t('docs.selectRow', { name: doc.filename })"
+                    data-e2e="doc-select"
+                    @change="onToggleOne(doc.id)"
+                  />
+                </td>
                 <td class="col-name">
                   <svg class="doc-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path
@@ -133,6 +191,9 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useDocumentStore } from '../features/document/store'
 import DownloadDropdown from '../features/document/ui/DownloadDropdown.vue'
 import { fetchDocumentAnalyses } from '../features/analysis/api'
+import { useAnalysisStore } from '../features/analysis/store'
+import type { BatchLaunch } from '../features/analysis/store'
+import { keepListed, selectionState, toggleListed, toggleOne } from './DocsLibraryPage.logic'
 import { useI18n } from '../shared/i18n'
 import { ROUTES } from '../shared/routing/names'
 import type { Document } from '../shared/types'
@@ -140,6 +201,7 @@ import { formatRelativeTime } from '../shared/format'
 import { appLocale } from '../shared/appConfig'
 
 const docStore = useDocumentStore()
+const analysisStore = useAnalysisStore()
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
@@ -186,6 +248,57 @@ const filteredDocs = computed(() => {
     return true
   })
 })
+
+// ---------------------------------------------------------------------------
+// Selection and batch analysis (#354)
+// ---------------------------------------------------------------------------
+const selected = ref<Set<string>>(new Set())
+const launching = ref(false)
+const launchFailures = ref<BatchLaunch['failed']>([])
+
+const listedIds = computed(() => filteredDocs.value.map((doc) => doc.id))
+const selection = computed(() => selectionState(selected.value, listedIds.value))
+
+// Only listed documents stay selected, so the count and Analyze match the rows shown.
+watch(listedIds, (ids) => {
+  selected.value = keepListed(selected.value, ids)
+})
+
+function onToggleListed(): void {
+  selected.value = toggleListed(selected.value, listedIds.value)
+}
+
+function onToggleOne(id: string): void {
+  selected.value = toggleOne(selected.value, id)
+}
+
+function clearSelection(): void {
+  selected.value = new Set()
+  launchFailures.value = []
+}
+
+function filenameOf(id: string): string {
+  return docStore.documents.find((doc) => doc.id === id)?.filename ?? id
+}
+
+// Start one analysis per selected document, then follow them in the Analysis
+// library. When some cannot start, stay here: those documents stay selected.
+async function analyzeSelected(): Promise<void> {
+  launching.value = true
+  launchFailures.value = []
+  try {
+    const ids = listedIds.value.filter((id) => selected.value.has(id))
+    const launch = await analysisStore.runBatch(ids)
+    selected.value = new Set(launch.failed.map((failure) => failure.documentId))
+    if (launch.failed.length) {
+      launchFailures.value = launch.failed
+      return
+    }
+    router.push({ name: ROUTES.ANALYSIS_LIBRARY })
+  } finally {
+    launching.value = false
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Table helpers
@@ -266,6 +379,41 @@ onMounted(() => {
   color: #92400e;
   background: #fef3c7;
   border: 1px solid #fde68a;
+}
+
+/* Batch analysis (#354) */
+.content-wrapper .flash {
+  margin: 0 0 12px;
+}
+.flash--error {
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+.flash--error ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-muted);
+}
+.bulk-count {
+  margin-right: auto;
+  color: var(--text);
+  font-size: 13px;
+}
+.col-select {
+  width: 36px;
+}
+.select-box {
+  cursor: pointer;
+  accent-color: var(--accent);
 }
 
 .filter-field {

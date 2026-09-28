@@ -206,6 +206,49 @@ class TestDocumentEndpoints:
         assert resp.status_code == 400
         assert "out of range" in resp.json()["detail"]
 
+    def test_page_sizes(self, client, mock_document_service, tmp_path):
+        from tests.test_document_service import pdf_with_pages
+
+        pdf = tmp_path / "test.pdf"
+        pdf.write_bytes(pdf_with_pages((612, 792), (842, 595)))
+        mock_document_service.find_by_id = AsyncMock(
+            return_value=Document(id="d1", filename="test.pdf", storage_path=str(pdf))
+        )
+
+        resp = client.get("/api/documents/d1/pages")
+
+        assert resp.status_code == 200
+        assert resp.json() == [
+            {"pageNumber": 1, "width": 612.0, "height": 792.0},
+            {"pageNumber": 2, "width": 842.0, "height": 595.0},
+        ]
+
+    def test_page_sizes_unknown_document(self, client, mock_document_service):
+        mock_document_service.find_by_id = AsyncMock(return_value=None)
+
+        assert client.get("/api/documents/nope/pages").status_code == 404
+
+    def test_page_sizes_missing_file(self, client, mock_document_service, tmp_path):
+        mock_document_service.find_by_id = AsyncMock(
+            return_value=Document(
+                id="d1", filename="gone.pdf", storage_path=str(tmp_path / "gone.pdf")
+            )
+        )
+
+        resp = client.get("/api/documents/d1/pages")
+
+        assert resp.status_code == 404
+        assert "not found on disk" in resp.json()["detail"]
+
+    def test_page_sizes_unreadable_pdf(self, client, mock_document_service, tmp_path):
+        broken = tmp_path / "broken.pdf"
+        broken.write_bytes(b"%PDF-not really")
+        mock_document_service.find_by_id = AsyncMock(
+            return_value=Document(id="d1", filename="broken.pdf", storage_path=str(broken))
+        )
+
+        assert client.get("/api/documents/d1/pages").status_code == 422
+
     def test_delete_document(self, client, mock_document_service):
         mock_document_service.delete = AsyncMock(return_value=True)
 
@@ -319,6 +362,33 @@ class TestAnalysisEndpoints:
         assert data[0]["documentId"] == "d1"
         assert data[0]["documentFilename"] == "test.pdf"
         assert data[0]["status"] == "PENDING"
+
+    def test_list_analysis_summaries(self, client, mock_analysis_service):
+        # #354 — statuses without content, not captured by /{analysis_id}.
+        mock_analysis_service.find_all_summaries = AsyncMock(
+            return_value=[
+                AnalysisJob(
+                    id="j1",
+                    document_id="d1",
+                    document_filename="test.pdf",
+                    progress_current=5,
+                    progress_total=10,
+                ),
+            ]
+        )
+
+        resp = client.get("/api/analyses/summaries")
+
+        assert resp.status_code == 200
+        [summary] = resp.json()
+        assert summary["id"] == "j1"
+        assert summary["documentFilename"] == "test.pdf"
+        assert summary["status"] == "PENDING"
+        assert summary["progressCurrent"] == 5
+        assert summary["progressTotal"] == 10
+        assert "contentMarkdown" not in summary
+        assert "pagesJson" not in summary
+        mock_analysis_service.find_all_summaries.assert_awaited_once()
 
     def test_list_analyses_filtered_by_document(self, client, mock_analysis_service):
         mock_analysis_service.find_all = AsyncMock(return_value=[])

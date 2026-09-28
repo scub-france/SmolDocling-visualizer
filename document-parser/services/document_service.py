@@ -10,9 +10,11 @@ import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import pypdfium2 as pdfium
 from pdf2image import convert_from_bytes, pdfinfo_from_bytes
 
 from domain.models import Document
+from domain.value_objects import PageDetail
 
 if TYPE_CHECKING:
     from domain.ports import AnalysisRepository, DocumentRepository
@@ -149,6 +151,26 @@ class DocumentService:
         buf = io.BytesIO()
         images[0].save(buf, format="PNG")
         return buf.getvalue()
+
+    @staticmethod
+    def page_sizes(file_content: bytes) -> list[PageDetail]:
+        """Size of each page of a PDF, in points, without its elements (#352).
+
+        Lets the page preview reserve each page's box before any analysis.
+        """
+        pdf = pdfium.PdfDocument(file_content)
+        try:
+            sizes: list[PageDetail] = []
+            for index in range(len(pdf)):
+                page = pdf[index]
+                try:
+                    width, height = page.get_size()
+                finally:
+                    page.close()
+                sizes.append(PageDetail(page_number=index + 1, width=width, height=height))
+            return sizes
+        finally:
+            pdf.close()
 
 
 def _persist_and_count(upload_dir: str, file_path: str, file_content: bytes) -> int | None:

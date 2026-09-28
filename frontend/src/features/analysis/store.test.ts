@@ -5,6 +5,7 @@ import { useAnalysisStore } from './store'
 vi.mock('./api', () => ({
   fetchAnalyses: vi.fn(),
   fetchAnalysis: vi.fn(),
+  fetchAnalysisSummaries: vi.fn(),
   createAnalysis: vi.fn(),
   deleteAnalysis: vi.fn(),
 }))
@@ -267,5 +268,91 @@ describe('useAnalysisStore', () => {
     await expect(store.run('d1')).rejects.toThrow('fail')
 
     expect(store.lastOutcome).toEqual({ kind: 'failed', documentId: 'd1', error: 'fail' })
+  })
+
+  // #354 — batch analysis: start many, follow them with one light request.
+  it('runBatch() starts one analysis per document and reports those that could not start', async () => {
+    api.createAnalysis
+      .mockResolvedValueOnce({ id: 'a1', status: 'PENDING', documentId: 'd1' })
+      .mockRejectedValueOnce(new Error('Document not found'))
+      .mockResolvedValueOnce({ id: 'a3', status: 'PENDING', documentId: 'd3' })
+
+    const store = useAnalysisStore()
+    const launch = await store.runBatch(['d1', 'd2', 'd3'])
+
+    expect(api.createAnalysis.mock.calls.map((call) => call[0])).toEqual(['d1', 'd2', 'd3'])
+    expect(launch.started.map((a) => a.id)).toEqual(['a1', 'a3'])
+    expect(launch.failed).toEqual([{ documentId: 'd2', error: 'Document not found' }])
+    expect(store.analyses.map((a) => a.id)).toEqual(['a3', 'a1'])
+  })
+
+  it('runBatch() leaves the single run of the document page alone', async () => {
+    api.createAnalysis.mockResolvedValue({ id: 'a1', status: 'PENDING', documentId: 'd1' })
+
+    const store = useAnalysisStore()
+    await store.runBatch(['d1'])
+
+    expect(store.running).toBe(false)
+    expect(store.currentAnalysis).toBeNull()
+    expect(store.lastOutcome).toBeNull()
+  })
+
+  it('followActive() refreshes the statuses until no analysis is active', async () => {
+    const store = useAnalysisStore()
+    store.analyses = [
+      { id: 'a1', status: 'RUNNING', documentId: 'd1', contentMarkdown: null },
+      { id: 'a2', status: 'COMPLETED', documentId: 'd2', contentMarkdown: '# Done' },
+    ]
+    api.fetchAnalysisSummaries
+      .mockResolvedValueOnce([{ id: 'a1', status: 'RUNNING', progressCurrent: 10 }])
+      .mockResolvedValueOnce([{ id: 'a1', status: 'COMPLETED' }])
+
+    store.followActive()
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(store.analyses[0]).toMatchObject({ status: 'RUNNING', progressCurrent: 10 })
+
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(store.analyses[0].status).toBe('COMPLETED')
+    expect(store.analyses[1].contentMarkdown).toBe('# Done')
+
+    await vi.advanceTimersByTimeAsync(9000)
+    expect(api.fetchAnalysisSummaries).toHaveBeenCalledTimes(2)
+  })
+
+  it('followActive() does not poll when nothing is active', async () => {
+    const store = useAnalysisStore()
+    store.analyses = [{ id: 'a1', status: 'COMPLETED', documentId: 'd1' }]
+
+    store.followActive()
+    await vi.advanceTimersByTimeAsync(9000)
+
+    expect(api.fetchAnalysisSummaries).not.toHaveBeenCalled()
+  })
+
+  it('stopFollowing() stops the refresh when the library closes', async () => {
+    const store = useAnalysisStore()
+    store.analyses = [{ id: 'a1', status: 'PENDING', documentId: 'd1' }]
+    api.fetchAnalysisSummaries.mockResolvedValue([{ id: 'a1', status: 'PENDING' }])
+
+    store.followActive()
+    await vi.advanceTimersByTimeAsync(3000)
+    store.stopFollowing()
+    await vi.advanceTimersByTimeAsync(9000)
+
+    expect(api.fetchAnalysisSummaries).toHaveBeenCalledTimes(1)
+  })
+
+  it('followActive() keeps following after a failed refresh', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const store = useAnalysisStore()
+    store.analyses = [{ id: 'a1', status: 'RUNNING', documentId: 'd1' }]
+    api.fetchAnalysisSummaries
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce([{ id: 'a1', status: 'COMPLETED' }])
+
+    store.followActive()
+    await vi.advanceTimersByTimeAsync(6000)
+
+    expect(store.analyses[0].status).toBe('COMPLETED')
   })
 })

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Analysis, Chunk, ChunkingOptions, Page, PipelineOptions } from '../../shared/types'
 import * as api from './api'
+import { hasActive, mergeSummaries } from './batch'
 
 /**
  * How the run started by `run()` ended (#342). A run fails when the analysis
@@ -11,6 +12,12 @@ import * as api from './api'
 export type AnalysisOutcome =
   | { kind: 'completed'; documentId: string; analysisId: string }
   | { kind: 'failed'; documentId: string; error: string | null }
+
+/** What `runBatch()` managed to start (#354). */
+export interface BatchLaunch {
+  started: Analysis[]
+  failed: { documentId: string; error: string }[]
+}
 
 export const useAnalysisStore = defineStore('analysis', () => {
   const analyses = ref<Analysis[]>([])
@@ -23,6 +30,8 @@ export const useAnalysisStore = defineStore('analysis', () => {
   const pollingTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
   const MAX_POLLING_DURATION = 15 * 60 * 1000 // 15 minutes — aligned with backend timeout
   const MAX_POLL_RETRIES = 3
+  const following = ref<ReturnType<typeof setInterval> | null>(null)
+  const FOLLOW_INTERVAL = 3000
 
   const currentPages = computed<Page[]>(() => {
     if (!currentAnalysis.value?.pagesJson) return []
@@ -138,6 +147,52 @@ export const useAnalysisStore = defineStore('analysis', () => {
     }
   }
 
+  /**
+   * Start one analysis per document with the default options, one request
+   * after the other (#354). The single run of `run()` is left alone: its
+   * `running` flag, `currentAnalysis` and `lastOutcome` do not move.
+   */
+  async function runBatch(documentIds: string[]): Promise<BatchLaunch> {
+    const launch: BatchLaunch = { started: [], failed: [] }
+    for (const documentId of documentIds) {
+      try {
+        const analysis = await api.createAnalysis(documentId)
+        analyses.value.unshift(analysis)
+        launch.started.push(analysis)
+      } catch (e) {
+        const reason = (e as Error).message || 'Failed to start analysis'
+        launch.failed.push({ documentId, error: reason })
+      }
+    }
+    return launch
+  }
+
+  /**
+   * Refresh the statuses of the listed analyses every 3 s while some are
+   * pending or running, and stop once none is left (#354). One summaries
+   * request per tick, however many analyses run: polling each of them would
+   * hit the rate limit, and the full list carries all their content.
+   */
+  function followActive(): void {
+    if (following.value || !hasActive(analyses.value)) return
+    following.value = setInterval(async () => {
+      try {
+        analyses.value = mergeSummaries(analyses.value, await api.fetchAnalysisSummaries())
+      } catch (e) {
+        console.warn('Could not refresh the analysis statuses', e)
+        return
+      }
+      if (!hasActive(analyses.value)) stopFollowing()
+    }, FOLLOW_INTERVAL)
+  }
+
+  function stopFollowing(): void {
+    if (following.value) {
+      clearInterval(following.value)
+      following.value = null
+    }
+  }
+
   function updateChunks(chunks: Chunk[]): void {
     if (currentAnalysis.value) {
       currentAnalysis.value = {
@@ -179,6 +234,9 @@ export const useAnalysisStore = defineStore('analysis', () => {
     clearError,
     load,
     run,
+    runBatch,
+    followActive,
+    stopFollowing,
     select,
     updateChunks,
     remove,

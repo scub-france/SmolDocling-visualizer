@@ -107,6 +107,14 @@ class DocumentResponse(_CamelModel):
     store_links: list[DocStoreLinkResponse] | None = None
 
 
+class PageSizeResponse(_CamelModel):
+    """Size of one page of a document's PDF, in points (#352)."""
+
+    page_number: int
+    width: float
+    height: float
+
+
 class AnalysisResponse(_CamelModel):
     id: str
     document_id: str = ""
@@ -117,6 +125,21 @@ class AnalysisResponse(_CamelModel):
     pages_json: str | None = None
     chunks_json: str | None = None
     has_document_json: bool = False
+    error_message: str | None = None
+    progress_current: int | None = None
+    progress_total: int | None = None
+    started_at: str | datetime | None = None
+    completed_at: str | datetime | None = None
+    created_at: str | datetime
+
+
+class AnalysisSummaryResponse(_CamelModel):
+    """An analysis without its content, to follow many statuses at once (#354)."""
+
+    id: str
+    document_id: str
+    document_filename: str | None = None
+    status: str
     error_message: str | None = None
     progress_current: int | None = None
     progress_total: int | None = None

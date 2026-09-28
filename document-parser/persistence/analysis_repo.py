@@ -21,9 +21,9 @@ def _row_to_job(row) -> AnalysisJob:
         id=row["id"],
         document_id=row["document_id"],
         status=AnalysisStatus(row["status"]),
-        content_markdown=row["content_markdown"],
-        content_html=row["content_html"],
-        pages_json=row["pages_json"],
+        content_markdown=row["content_markdown"] if "content_markdown" in keys else None,
+        content_html=row["content_html"] if "content_html" in keys else None,
+        pages_json=row["pages_json"] if "pages_json" in keys else None,
         document_json=row["document_json"] if "document_json" in keys else None,
         chunks_json=row["chunks_json"] if "chunks_json" in keys else None,
         error_message=row["error_message"],
@@ -38,6 +38,15 @@ def _row_to_job(row) -> AnalysisJob:
 
 _SELECT_WITH_DOC = """
     SELECT aj.*, d.filename
+    FROM analysis_jobs aj
+    JOIN documents d ON d.id = aj.document_id
+"""
+
+# Everything but the content (markdown, HTML, pages, chunks, Docling document):
+# what following the statuses of many analyses needs (#354).
+_SELECT_SUMMARY = """
+    SELECT aj.id, aj.document_id, aj.status, aj.error_message, aj.progress_current,
+           aj.progress_total, aj.started_at, aj.completed_at, aj.created_at, d.filename
     FROM analysis_jobs aj
     JOIN documents d ON d.id = aj.document_id
 """
@@ -61,6 +70,16 @@ class SqliteAnalysisRepository:
         async with get_connection() as db:
             cursor = await db.execute(
                 f"{_SELECT_WITH_DOC} ORDER BY aj.created_at DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            )
+            rows = await cursor.fetchall()
+            return [_row_to_job(r) for r in rows]
+
+    async def find_all_summaries(self, *, limit: int = 200, offset: int = 0) -> list[AnalysisJob]:
+        """Return analysis jobs without their content, newest first (#354)."""
+        async with get_connection() as db:
+            cursor = await db.execute(
+                f"{_SELECT_SUMMARY} ORDER BY aj.created_at DESC LIMIT ? OFFSET ?",
                 (limit, offset),
             )
             rows = await cursor.fetchall()
