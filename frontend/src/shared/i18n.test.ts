@@ -80,6 +80,24 @@ describe('useI18n', () => {
     expect(t('parse.showAllHint')).toBe('Clear the selection and highlight every bbox again')
   })
 
+  it('has the New analysis failure keys in French', () => {
+    const { t } = useI18n()
+    expect(t('newAnalysis.failed')).toBe("L'analyse a échoué.")
+    expect(t('newAnalysis.failedWithReason', { reason: 'Out of memory' })).toBe(
+      "L'analyse a échoué : Out of memory",
+    )
+  })
+
+  it('has the New analysis failure keys in English', () => {
+    appLocale.value = 'en'
+
+    const { t } = useI18n()
+    expect(t('newAnalysis.failed')).toBe('The analysis failed.')
+    expect(t('newAnalysis.failedWithReason', { reason: 'Out of memory' })).toBe(
+      'The analysis failed: Out of memory',
+    )
+  })
+
   it('has detailed pipeline option hints in French', () => {
     const { t } = useI18n()
     expect(t('config.ocrHint').length).toBeGreaterThan(40)

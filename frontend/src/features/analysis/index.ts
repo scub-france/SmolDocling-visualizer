@@ -1,4 +1,5 @@
 export { useAnalysisStore } from './store'
+export type { AnalysisOutcome } from './store'
 export { fetchAnalysis } from './api'
 export { default as AnalysisPanel } from './ui/AnalysisPanel.vue'
 export { default as ResultTabs } from './ui/ResultTabs.vue'
