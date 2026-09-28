@@ -199,4 +199,72 @@ describe('useAnalysisStore', () => {
     await vi.advanceTimersByTimeAsync(2000) // success — COMPLETED
     expect(store.running).toBe(false)
   })
+
+  // #342 — the doc workspace reacts to how a run ends, whatever ended it.
+  it('run() records a completed outcome once the analysis completes', async () => {
+    const job = { id: 'j1', status: 'PENDING', documentId: 'd1' }
+    api.createAnalysis.mockResolvedValue(job)
+    api.fetchAnalysis.mockResolvedValue({ ...job, status: 'COMPLETED' })
+
+    const store = useAnalysisStore()
+    await store.run('d1')
+    expect(store.lastOutcome).toBeNull()
+
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(store.lastOutcome).toEqual({ kind: 'completed', documentId: 'd1', analysisId: 'j1' })
+  })
+
+  it('run() records the error message when the analysis fails', async () => {
+    const job = { id: 'j1', status: 'PENDING', documentId: 'd1' }
+    api.createAnalysis.mockResolvedValue(job)
+    api.fetchAnalysis.mockResolvedValue({ ...job, status: 'FAILED', errorMessage: 'oops' })
+
+    const store = useAnalysisStore()
+    await store.run('d1')
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(store.lastOutcome).toEqual({ kind: 'failed', documentId: 'd1', error: 'oops' })
+  })
+
+  it('run() records a failed outcome when polling gives up', async () => {
+    const job = { id: 'j1', status: 'PENDING', documentId: 'd1' }
+    api.createAnalysis.mockResolvedValue(job)
+    api.fetchAnalysis.mockRejectedValue(new Error('network'))
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const store = useAnalysisStore()
+    await store.run('d1')
+    await vi.advanceTimersByTimeAsync(3 * 2000)
+
+    expect(store.lastOutcome).toEqual({ kind: 'failed', documentId: 'd1', error: 'network' })
+  })
+
+  it('run() records a failed outcome when the analysis times out', async () => {
+    const job = { id: 'j1', status: 'PENDING', documentId: 'd1' }
+    api.createAnalysis.mockResolvedValue(job)
+    api.fetchAnalysis.mockResolvedValue({ ...job, status: 'RUNNING' })
+
+    const store = useAnalysisStore()
+    await store.run('d1')
+    await vi.advanceTimersByTimeAsync(15 * 60 * 1000)
+
+    expect(store.running).toBe(false)
+    expect(store.lastOutcome).toEqual({
+      kind: 'failed',
+      documentId: 'd1',
+      error: 'Analysis timed out',
+    })
+  })
+
+  it('run() records a failed outcome when the analysis cannot start', async () => {
+    api.createAnalysis.mockRejectedValue(new Error('fail'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const store = useAnalysisStore()
+    await expect(store.run('d1')).rejects.toThrow('fail')
+
+    expect(store.lastOutcome).toEqual({ kind: 'failed', documentId: 'd1', error: 'fail' })
+  })
 })

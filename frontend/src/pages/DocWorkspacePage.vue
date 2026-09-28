@@ -16,7 +16,21 @@
     <template v-else-if="doc">
       <DocWorkspaceHeader :doc="doc">
         <template #actions>
-          <button class="analyze-btn" :disabled="analysisStore.running" @click="onLaunchAnalysis">
+          <p
+            v-if="launchError"
+            class="analyze-error"
+            role="alert"
+            :title="launchError"
+            data-e2e="workspace-analysis-error"
+          >
+            {{ launchError }}
+          </p>
+          <button
+            class="analyze-btn"
+            :disabled="analysisStore.running"
+            data-e2e="workspace-new-analysis"
+            @click="onLaunchAnalysis"
+          >
             {{ analysisStore.running ? t('newAnalysis.running') : t('newAnalysis.title') }}
           </button>
         </template>
@@ -53,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import type { Document } from '../shared/types'
 import { fetchDocument } from '../features/document/api'
 import { useAnalysisStore } from '../features/analysis/store'
@@ -64,21 +78,45 @@ import { useI18n } from '../shared/i18n'
 import { ROUTES } from '../shared/routing/names'
 import DocWorkspaceHeader from '../features/document/ui/DocWorkspaceHeader.vue'
 import PagePreview from '../features/document/ui/PagePreview.vue'
+import { reactToOutcome } from './DocWorkspacePage.logic'
 
 const props = defineProps<{ id: string }>()
 
 const { t } = useI18n()
+const router = useRouter()
 const analysisStore = useAnalysisStore()
 
 const doc = ref<Document | null>(null)
 const loadingDoc = ref(true)
 const docError = ref<string | null>(null)
 const currentPage = ref(1)
+const launchError = ref<string | null>(null)
 
 async function onLaunchAnalysis(): Promise<void> {
   if (analysisStore.running) return
-  await analysisStore.run(props.id)
+  launchError.value = null
+  try {
+    await analysisStore.run(props.id)
+  } catch {
+    // Reported through `analysisStore.lastOutcome`, like every other failure.
+  }
 }
+
+// #342 — when the analysis run ends, open the analysis it produced, or say
+// why it failed. `reactToOutcome` ignores runs of another document.
+watch(
+  () => analysisStore.lastOutcome,
+  (outcome) => {
+    const reaction = reactToOutcome(outcome, props.id)
+    if (reaction.kind === 'open') {
+      router.push({ name: ROUTES.ANALYSIS_DETAIL, params: { id: reaction.analysisId } })
+    } else if (reaction.kind === 'error') {
+      launchError.value = reaction.reason
+        ? t('newAnalysis.failedWithReason', { reason: reaction.reason })
+        : t('newAnalysis.failed')
+    }
+  },
+)
 
 const crumbs = computed<Crumb[]>(() => [
   { kind: 'link', label: t('breadcrumb.studio'), to: { name: ROUTES.HOME } },
@@ -116,6 +154,7 @@ watch(
   (newId, oldId) => {
     if (newId !== oldId) loadDoc()
     if (newId !== oldId) currentPage.value = 1
+    if (newId !== oldId) launchError.value = null
   },
 )
 </script>
@@ -224,6 +263,16 @@ watch(
 .analyze-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.analyze-error {
+  max-width: 360px;
+  margin: 0;
+  overflow: hidden;
+  color: var(--error);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spinner {

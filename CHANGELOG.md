@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Changed
 
+- **Doc workspace — New analysis opens the analysis** (#342): an analysis launched from `/docs/:id` used to end without a word. The button went back to *New analysis*, and the result had to be found in the Analysis library. The workspace now opens the analysis on its Parse view when it completes, as long as its document is still on screen. When the run fails (failed conversion, start error, polling given up, timeout), the reason shows next to the button.
 - **Documentation rewritten** (#340): one short page per need (get started, user guide, configuration, troubleshooting, architecture, contributing, maintainers), checked against the 0.7.3 code, with small Mermaid diagrams. Duplicated and outdated pages are gone. Audit reports, design docs and demo scripts stay in the repo but are no longer published on the docs site.
 
 ### Deprecated

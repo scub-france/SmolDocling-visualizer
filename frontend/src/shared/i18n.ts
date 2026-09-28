@@ -278,6 +278,8 @@ const messages: Messages = {
     // + New analysis — in-place trigger (#266)
     'newAnalysis.title': 'Nouvelle analyse',
     'newAnalysis.running': 'Analyse en cours…',
+    'newAnalysis.failed': "L'analyse a échoué.",
+    'newAnalysis.failedWithReason': "L'analyse a échoué : {reason}",
 
     // Chunking
     'studio.prepare': 'Préparer',
@@ -905,6 +907,8 @@ const messages: Messages = {
     // + New analysis — in-place trigger (#266)
     'newAnalysis.title': 'New analysis',
     'newAnalysis.running': 'Analyzing…',
+    'newAnalysis.failed': 'The analysis failed.',
+    'newAnalysis.failedWithReason': 'The analysis failed: {reason}',
 
     'studio.prepare': 'Prepare',
     'studio.ingest': 'Ingest',

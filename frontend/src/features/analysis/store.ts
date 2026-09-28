@@ -3,10 +3,20 @@ import { ref, computed } from 'vue'
 import type { Analysis, Chunk, ChunkingOptions, Page, PipelineOptions } from '../../shared/types'
 import * as api from './api'
 
+/**
+ * How the run started by `run()` ended (#342). A run fails when the analysis
+ * reaches `FAILED`, but also when it cannot start, when polling gives up after
+ * repeated errors, or when it times out — `error` then holds the reason.
+ */
+export type AnalysisOutcome =
+  | { kind: 'completed'; documentId: string; analysisId: string }
+  | { kind: 'failed'; documentId: string; error: string | null }
+
 export const useAnalysisStore = defineStore('analysis', () => {
   const analyses = ref<Analysis[]>([])
   const currentAnalysis = ref<Analysis | null>(null)
   const running = ref(false)
+  const lastOutcome = ref<AnalysisOutcome | null>(null)
   const error = ref<string | null>(null)
   const loading = ref(false)
   const pollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
@@ -61,17 +71,24 @@ export const useAnalysisStore = defineStore('analysis', () => {
       const analysis = await api.createAnalysis(documentId, pipelineOptions, chunkingOptions)
       currentAnalysis.value = analysis
       analyses.value.unshift(analysis)
-      startPolling(analysis.id)
+      startPolling(analysis.id, documentId)
       return analysis
     } catch (e) {
-      running.value = false
       error.value = (e as Error).message || 'Failed to start analysis'
       console.error('Failed to start analysis', e)
+      finishRun({ kind: 'failed', documentId, error: error.value })
       throw e
     }
   }
 
-  function startPolling(id: string): void {
+  /** Stop tracking the current run and record how it ended. */
+  function finishRun(outcome: AnalysisOutcome): void {
+    stopPolling()
+    running.value = false
+    lastOutcome.value = outcome
+  }
+
+  function startPolling(id: string, documentId: string): void {
     stopPolling()
     let consecutiveErrors = 0
     pollingInterval.value = setInterval(async () => {
@@ -81,9 +98,10 @@ export const useAnalysisStore = defineStore('analysis', () => {
         currentAnalysis.value = updated
         const idx = analyses.value.findIndex((a) => a.id === id)
         if (idx !== -1) analyses.value[idx] = updated
-        if (updated.status === 'COMPLETED' || updated.status === 'FAILED') {
-          stopPolling()
-          running.value = false
+        if (updated.status === 'COMPLETED') {
+          finishRun({ kind: 'completed', documentId, analysisId: id })
+        } else if (updated.status === 'FAILED') {
+          finishRun({ kind: 'failed', documentId, error: updated.errorMessage })
         }
       } catch (e) {
         consecutiveErrors++
@@ -91,16 +109,14 @@ export const useAnalysisStore = defineStore('analysis', () => {
         if (consecutiveErrors >= MAX_POLL_RETRIES) {
           error.value = (e as Error).message || 'Polling error'
           console.error('Polling abandoned after retries', e)
-          stopPolling()
-          running.value = false
+          finishRun({ kind: 'failed', documentId, error: error.value })
         }
       }
     }, 2000)
     pollingTimeout.value = setTimeout(() => {
       if (pollingInterval.value) {
         error.value = 'Analysis timed out'
-        stopPolling()
-        running.value = false
+        finishRun({ kind: 'failed', documentId, error: error.value })
       }
     }, MAX_POLLING_DURATION)
   }
@@ -151,6 +167,7 @@ export const useAnalysisStore = defineStore('analysis', () => {
     currentPages,
     currentChunks,
     running,
+    lastOutcome,
     error,
     loading,
     clearError,
