@@ -105,4 +105,22 @@ describe('useI18n', () => {
     expect(t('config.generatePictureImagesHint').length).toBeGreaterThan(40)
     expect(t('config.generatePageImagesHint').length).toBeGreaterThan(40)
   })
+
+  it('has the LAYERS bar hide / show boxes keys in French', () => {
+    const { t } = useI18n()
+    expect(t('layers.hideBoxes')).toBe('Masquer les boîtes')
+    expect(t('layers.showBoxes')).toBe('Afficher les boîtes')
+    expect(t('layers.hideBoxesHint')).toBe('Masque toutes les bbox pour voir la page seule')
+    expect(t('layers.showBoxesHint')).toBe('Réaffiche toutes les bbox')
+  })
+
+  it('has the LAYERS bar hide / show boxes keys in English', () => {
+    appLocale.value = 'en'
+
+    const { t } = useI18n()
+    expect(t('layers.hideBoxes')).toBe('Hide boxes')
+    expect(t('layers.showBoxes')).toBe('Show boxes')
+    expect(t('layers.hideBoxesHint')).toBe('Hide every bbox to see the bare page')
+    expect(t('layers.showBoxesHint')).toBe('Show every bbox again')
+  })
 })
