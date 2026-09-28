@@ -1,0 +1,197 @@
+{
+  "status": "draft: each case must be validated by Pj before any run",
+  "documents": {
+    "screenparse": {
+      "file": "~/Downloads/2602.pdf",
+      "arxiv": "2602.14276v2",
+      "title": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "source": {"studio_job": "a0fe56c9-77e0-475f-8830-b96d40aadfa3"}
+    },
+    "unfolding": {
+      "file": "~/Downloads/Unfolding the Leech Lattice_ Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights - 2609.02652v1.pdf",
+      "arxiv": "2609.02652v1",
+      "title": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "source": {"docling_json": "output/unfolding.docling.json"},
+      "note": "The Studio analysis (job 045e197b21fc) is unreadable: this PDF copy was saved through macOS Quartz with no ToUnicode map, so the text layer reads shifted letters. Re-parsed with parse_pdf.py (Docling, full-page Tesseract OCR); OCR misreads in titles fixed against the rendered pages.",
+      "title_fixes": {
+        "1. Introduction": "1 Introduction",
+        "2.1 Whata 44 index is": "2.1 What a Λ24 index is",
+        "2.3. The kernel": "2.3 The kernel",
+        "3.1. Protocol": "3.1 Protocol",
+        "3.3. Where deployed 4-bit and 2-bit kernels sit": "3.3 Where deployed 4-bit and 2-bit kernels sit",
+        "3.5 Asecond memory hierarchy": "3.5 A second memory hierarchy",
+        "Use of generative Al": "Use of generative AI",
+        "B_ Protocol pre-registered criteria and provenance": "B Protocol pre-registered criteria and provenance"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "c1",
+      "doc": "screenparse",
+      "type": "lexical",
+      "question": "In the experiments, which baselines is ScreenVLM compared against?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "5. Experiments",
+        "5.3. Baselines"
+      ],
+      "note": "5.3 defines both baseline families (Qwen3-VL-2B/8B-Instruct, InternVL3-2B; OmniParser v2, YOLOv11-L, RT-DETRv2); other sections only mention 'baselines' in passing.",
+      "validated": false
+    },
+    {
+      "id": "c2",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "4. Method",
+        "4.3. Lightweight Vision-Language Model"
+      ],
+      "note": "Only 4.3 states the Granite Docling initialization and its rationale (document-to-markup pretraining); 5.4 merely refers to 'our initialization strategy (Sect. 4)'.",
+      "validated": false
+    },
+    {
+      "id": "c3",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.2. Training Details"
+      ],
+      "note": "The loss is defined in 4.3 (Eq. 1, no values) and ablated in 5.5, but lambda_tag = 2 and lambda_loc = 2 only appear in the last line of 7.2, a section otherwise about baseline fine-tuning.",
+      "validated": false
+    },
+    {
+      "id": "c4",
+      "doc": "screenparse",
+      "type": "lexical",
+      "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.6. Webshot Pipeline Specifications",
+        "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION"
+      ],
+      "note": "Only 7.6.1 gives the 1440x900 viewport and the 30 s navigation timeout; 3.2 only says pages are rendered with Playwright.",
+      "validated": false
+    },
+    {
+      "id": "c5",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.2. Dataset Pipeline: Webshot"
+      ],
+      "note": "The Web Crawling paragraph of 3.2 is the only place giving the source: 1 million URLs from the 45 Million Websites dataset (Common Crawl, Alexa Top Sites, public domain lists).",
+      "validated": false
+    },
+    {
+      "id": "c6",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "question": "What proportion of the screenshots is used for training, validation and testing?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.1. Overview"
+      ],
+      "note": "The 90/5/5 split is only in 3.1, titled Overview; 5.2 gives the test-set size (38.6K) but not the split.",
+      "validated": false
+    },
+    {
+      "id": "c7",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.3. Evaluation Metrics"
+      ],
+      "note": "5.2 describes PageIoU informally and points to Appendix 7.3 for the formal definitions.",
+      "validated": false
+    },
+    {
+      "id": "u1",
+      "doc": "unfolding",
+      "type": "lexical",
+      "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.4 Verification"
+      ],
+      "note": "2.4 lists the three defenses (bit-exact transcoding, every row against f64 before timing, invariant locks such as the kissing number); other sections only cite the f64 check.",
+      "validated": false
+    },
+    {
+      "id": "u2",
+      "doc": "unfolding",
+      "type": "lexical",
+      "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+        "3.4 Attribution to the DRAM floor"
+      ],
+      "note": "Only 3.4 breaks the 2.04 ms gap down (0.803 ms latency and occupancy, 0.681 ms payload streaming, then residual decode, shared-memory reads and the class-table gather); the introduction and conclusion only quote the 39%.",
+      "validated": false
+    },
+    {
+      "id": "u3",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "question": "Where can the code and the quantized 4B model be downloaded?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "9 Availability"
+      ],
+      "note": "The GitHub and Hugging Face links are only in 9; References only cites third-party repositories.",
+      "validated": false
+    },
+    {
+      "id": "u4",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "question": "How were the MMLU questions sampled, and how many per subject?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "5 Evaluation"
+      ],
+      "note": "Only 5 states 2 280 questions, 40 per subject from a fixed seed; Appendix A reuses the same questions without describing the sampling.",
+      "validated": false
+    },
+    {
+      "id": "u5",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "question": "How long does loading the 4B model take, unfolding included, compared with the f16 weights?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "6 Limitations and Validity Envelope"
+      ],
+      "note": "The 122-131 s against 186-188 s load times are only in 6; 2.2 'Unfolding at load time' describes the transcoder but gives no load time.",
+      "validated": false
+    },
+    {
+      "id": "u6",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+        "3.5 A second memory hierarchy"
+      ],
+      "note": "The 2520 MHz and 1410 MHz boost clocks are only in 3.5, whose title announces a memory hierarchy, not clocks.",
+      "validated": false
+    }
+  ]
+}

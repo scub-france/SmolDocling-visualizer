@@ -1,0 +1,2826 @@
+{
+  "meta": {
+    "checkpoint": "convaiinnovations/laya",
+    "laya": "0.3.20",
+    "torch": "2.14.0",
+    "device": "mps",
+    "machine": "Darwin arm64",
+    "run_at": "2026-09-25T09:28:45+00:00",
+    "repeats": 5,
+    "cases_sha256": "cebba07497a581d202fd842a1ffef69c39e7d466c739c33e1ab4710e835dbab7",
+    "instructions": "`path` is where the reader currently is in the paper. Which of these sections most likely contains the answer to `question`?",
+    "temperature_by_options_applied": {
+      "choice:3-5": 1.7601518630981445,
+      "choice:6-10": 1.0000158548355103,
+      "score:3-5": 1.2514300346374512,
+      "noul:2": 1.983399510383606,
+      "choice:11+": 0.5,
+      "choice:2": 1.9063563346862793
+    },
+    "temperature_by_options_shipped": {
+      "choice:3-5": 1.7601518630981445,
+      "choice:6-10": 1.0000158548355103,
+      "score:3-5": 1.2514300346374512,
+      "noul:2": 1.983399510383606,
+      "choice:11+": 0.10058280825614929,
+      "choice:2": 1.9063563346862793
+    }
+  },
+  "documents": {
+    "screenparse": {
+      "file": "~/Downloads/2602.pdf",
+      "arxiv": "2602.14276v2",
+      "title": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "source": {
+        "studio_job": "a0fe56c9-77e0-475f-8830-b96d40aadfa3"
+      }
+    },
+    "unfolding": {
+      "file": "~/Downloads/Unfolding the Leech Lattice_ Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights - 2609.02652v1.pdf",
+      "arxiv": "2609.02652v1",
+      "title": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "source": {
+        "docling_json": "output/unfolding.docling.json"
+      },
+      "note": "The Studio analysis (job 045e197b21fc) is unreadable: this PDF copy was saved through macOS Quartz with no ToUnicode map, so the text layer reads shifted letters. Re-parsed with parse_pdf.py (Docling, full-page Tesseract OCR); OCR misreads in titles fixed against the rendered pages.",
+      "title_fixes": {
+        "1. Introduction": "1 Introduction",
+        "2.1 Whata 44 index is": "2.1 What a Λ24 index is",
+        "2.3. The kernel": "2.3 The kernel",
+        "3.1. Protocol": "3.1 Protocol",
+        "3.3. Where deployed 4-bit and 2-bit kernels sit": "3.3 Where deployed 4-bit and 2-bit kernels sit",
+        "3.5 Asecond memory hierarchy": "3.5 A second memory hierarchy",
+        "Use of generative Al": "Use of generative AI",
+        "B_ Protocol pre-registered criteria and provenance": "B Protocol pre-registered criteria and provenance"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "c1",
+      "doc": "screenparse",
+      "type": "lexical",
+      "question": "In the experiments, which baselines is ScreenVLM compared against?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "5. Experiments",
+        "5.3. Baselines"
+      ],
+      "note": "5.3 defines both baseline families (Qwen3-VL-2B/8B-Instruct, InternVL3-2B; OmniParser v2, YOLOv11-L, RT-DETRv2); other sections only mention 'baselines' in passing.",
+      "validated": false
+    },
+    {
+      "id": "c2",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "4. Method",
+        "4.3. Lightweight Vision-Language Model"
+      ],
+      "note": "Only 4.3 states the Granite Docling initialization and its rationale (document-to-markup pretraining); 5.4 merely refers to 'our initialization strategy (Sect. 4)'.",
+      "validated": false
+    },
+    {
+      "id": "c3",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.2. Training Details"
+      ],
+      "note": "The loss is defined in 4.3 (Eq. 1, no values) and ablated in 5.5, but lambda_tag = 2 and lambda_loc = 2 only appear in the last line of 7.2, a section otherwise about baseline fine-tuning.",
+      "validated": false
+    },
+    {
+      "id": "c4",
+      "doc": "screenparse",
+      "type": "lexical",
+      "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.6. Webshot Pipeline Specifications",
+        "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION"
+      ],
+      "note": "Only 7.6.1 gives the 1440x900 viewport and the 30 s navigation timeout; 3.2 only says pages are rendered with Playwright.",
+      "validated": false
+    },
+    {
+      "id": "c5",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.2. Dataset Pipeline: Webshot"
+      ],
+      "note": "The Web Crawling paragraph of 3.2 is the only place giving the source: 1 million URLs from the 45 Million Websites dataset (Common Crawl, Alexa Top Sites, public domain lists).",
+      "validated": false
+    },
+    {
+      "id": "c6",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "question": "What proportion of the screenshots is used for training, validation and testing?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.1. Overview"
+      ],
+      "note": "The 90/5/5 split is only in 3.1, titled Overview; 5.2 gives the test-set size (38.6K) but not the split.",
+      "validated": false
+    },
+    {
+      "id": "c7",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+      "target_path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "7. Appendix",
+        "7.3. Evaluation Metrics"
+      ],
+      "note": "5.2 describes PageIoU informally and points to Appendix 7.3 for the formal definitions.",
+      "validated": false
+    },
+    {
+      "id": "u1",
+      "doc": "unfolding",
+      "type": "lexical",
+      "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.4 Verification"
+      ],
+      "note": "2.4 lists the three defenses (bit-exact transcoding, every row against f64 before timing, invariant locks such as the kissing number); other sections only cite the f64 check.",
+      "validated": false
+    },
+    {
+      "id": "u2",
+      "doc": "unfolding",
+      "type": "lexical",
+      "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+        "3.4 Attribution to the DRAM floor"
+      ],
+      "note": "Only 3.4 breaks the 2.04 ms gap down (0.803 ms latency and occupancy, 0.681 ms payload streaming, then residual decode, shared-memory reads and the class-table gather); the introduction and conclusion only quote the 39%.",
+      "validated": false
+    },
+    {
+      "id": "u3",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "question": "Where can the code and the quantized 4B model be downloaded?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "9 Availability"
+      ],
+      "note": "The GitHub and Hugging Face links are only in 9; References only cites third-party repositories.",
+      "validated": false
+    },
+    {
+      "id": "u4",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "question": "How were the MMLU questions sampled, and how many per subject?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "5 Evaluation"
+      ],
+      "note": "Only 5 states 2 280 questions, 40 per subject from a fixed seed; Appendix A reuses the same questions without describing the sampling.",
+      "validated": false
+    },
+    {
+      "id": "u5",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "question": "How long does loading the 4B model take, unfolding included, compared with the f16 weights?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "6 Limitations and Validity Envelope"
+      ],
+      "note": "The 122-131 s against 186-188 s load times are only in 6; 2.2 'Unfolding at load time' describes the transcoder but gives no load time.",
+      "validated": false
+    },
+    {
+      "id": "u6",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+      "target_path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+        "3.5 A second memory hierarchy"
+      ],
+      "note": "The 2520 MHz and 1410 MHz boost clocks are only in 3.5, whose title announces a memory hierarchy, not clocks.",
+      "validated": false
+    }
+  ],
+  "metrics": {
+    "overall": {
+      "decisions": 24,
+      "correct": 7,
+      "top1": 0.2917,
+      "chance_mean": 0.1648,
+      "top2": 0.5417,
+      "answer_confidence_correct": 0.4518,
+      "answer_confidence_wrong": 0.3981,
+      "confidence_correct": 0.2568,
+      "confidence_wrong": 0.1903,
+      "auroc_answer_confidence": 0.605,
+      "auroc_confidence": 0.5462
+    },
+    "by_doc": {
+      "screenparse": {
+        "decisions": 15,
+        "correct": 5,
+        "top1": 0.3333,
+        "chance_mean": 0.1896,
+        "top2": 0.6,
+        "answer_confidence_correct": 0.3856,
+        "answer_confidence_wrong": 0.3893,
+        "confidence_correct": 0.1039,
+        "confidence_wrong": 0.1205,
+        "auroc_answer_confidence": 0.54,
+        "auroc_confidence": 0.46
+      },
+      "unfolding": {
+        "decisions": 9,
+        "correct": 2,
+        "top1": 0.2222,
+        "chance_mean": 0.1235,
+        "top2": 0.4444,
+        "answer_confidence_correct": 0.6174,
+        "answer_confidence_wrong": 0.4108,
+        "confidence_correct": 0.6388,
+        "confidence_wrong": 0.2901,
+        "auroc_answer_confidence": 1.0,
+        "auroc_confidence": 1.0
+      }
+    },
+    "by_type": {
+      "lexical": {
+        "decisions": 9,
+        "correct": 5,
+        "top1": 0.5556,
+        "chance_mean": 0.1486,
+        "top2": 0.7778,
+        "answer_confidence_correct": 0.4239,
+        "answer_confidence_wrong": 0.3607,
+        "confidence_correct": 0.2283,
+        "confidence_wrong": 0.1651,
+        "auroc_answer_confidence": 0.6,
+        "auroc_confidence": 0.55
+      },
+      "misleading_title": {
+        "decisions": 7,
+        "correct": 0,
+        "top1": 0.0,
+        "chance_mean": 0.1696,
+        "top2": 0.1429,
+        "answer_confidence_correct": null,
+        "answer_confidence_wrong": 0.3965,
+        "confidence_correct": null,
+        "confidence_wrong": 0.2024,
+        "auroc_answer_confidence": null,
+        "auroc_confidence": null
+      },
+      "paraphrase": {
+        "decisions": 8,
+        "correct": 2,
+        "top1": 0.25,
+        "chance_mean": 0.1789,
+        "top2": 0.625,
+        "answer_confidence_correct": 0.5216,
+        "answer_confidence_wrong": 0.425,
+        "confidence_correct": 0.3278,
+        "confidence_wrong": 0.193,
+        "auroc_answer_confidence": 0.6667,
+        "auroc_confidence": 0.5833
+      }
+    },
+    "by_bucket": {
+      "11+": {
+        "decisions": 6,
+        "correct": 2,
+        "top1": 0.3333,
+        "chance_mean": 0.0769,
+        "top2": 0.5,
+        "answer_confidence_correct": 0.6174,
+        "answer_confidence_wrong": 0.456,
+        "confidence_correct": 0.6388,
+        "confidence_wrong": 0.4702,
+        "auroc_answer_confidence": 1.0,
+        "auroc_confidence": 1.0
+      },
+      "2": {
+        "decisions": 2,
+        "correct": 0,
+        "top1": 0.0,
+        "chance_mean": 0.5,
+        "top2": 1.0,
+        "answer_confidence_correct": null,
+        "answer_confidence_wrong": 0.5536,
+        "confidence_correct": null,
+        "confidence_wrong": 0.0129,
+        "auroc_answer_confidence": null,
+        "auroc_confidence": null
+      },
+      "3-5": {
+        "decisions": 6,
+        "correct": 3,
+        "top1": 0.5,
+        "chance_mean": 0.2306,
+        "top2": 0.6667,
+        "answer_confidence_correct": 0.4468,
+        "answer_confidence_wrong": 0.3505,
+        "confidence_correct": 0.0925,
+        "confidence_wrong": 0.0499,
+        "auroc_answer_confidence": 0.7778,
+        "auroc_confidence": 0.5556
+      },
+      "6-10": {
+        "decisions": 10,
+        "correct": 2,
+        "top1": 0.2,
+        "chance_mean": 0.1111,
+        "top2": 0.4,
+        "answer_confidence_correct": 0.2938,
+        "answer_confidence_wrong": 0.3482,
+        "confidence_correct": 0.1211,
+        "confidence_wrong": 0.1473,
+        "auroc_answer_confidence": 0.5,
+        "auroc_confidence": 0.4375
+      }
+    },
+    "by_step": {
+      "1": {
+        "decisions": 13,
+        "correct": 3,
+        "top1": 0.2308,
+        "chance_mean": 0.0953,
+        "top2": 0.3846,
+        "answer_confidence_correct": 0.5389,
+        "answer_confidence_wrong": 0.4109,
+        "confidence_correct": 0.4983,
+        "confidence_wrong": 0.293,
+        "auroc_answer_confidence": 0.7333,
+        "auroc_confidence": 0.8
+      },
+      "2": {
+        "decisions": 10,
+        "correct": 3,
+        "top1": 0.3,
+        "chance_mean": 0.2517,
+        "top2": 0.7,
+        "answer_confidence_correct": 0.3236,
+        "answer_confidence_wrong": 0.3799,
+        "confidence_correct": 0.0289,
+        "confidence_wrong": 0.0435,
+        "auroc_answer_confidence": 0.381,
+        "auroc_confidence": 0.4286
+      },
+      "3": {
+        "decisions": 1,
+        "correct": 1,
+        "top1": 1.0,
+        "chance_mean": 0.2,
+        "top2": 1.0,
+        "answer_confidence_correct": 0.5752,
+        "answer_confidence_wrong": null,
+        "confidence_correct": 0.2157,
+        "confidence_wrong": null,
+        "auroc_answer_confidence": null,
+        "auroc_confidence": null
+      }
+    },
+    "full_paths_correct": 0.1538,
+    "greedy_reaches_target": 0.1538,
+    "history_replays": 17,
+    "history_replays_fixed": 2,
+    "history_choice_unchanged": 14,
+    "budget_all_ok": true,
+    "latency_ms_mean": 25.0417
+  },
+  "decisions": [
+    {
+      "case": "c1",
+      "doc": "screenparse",
+      "type": "lexical",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "In the experiments, which baselines is ScreenVLM compared against?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 37,
+        "total": 108,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "5. Experiments",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.3821,
+      "choice": "5. Experiments",
+      "probabilities": {
+        "Abstract": 0.0241,
+        "1. Introduction": 0.0351,
+        "2. Related Work": 0.1297,
+        "3. Dataset: ScreenParse": 0.228,
+        "4. Method": 0.1216,
+        "5. Experiments": 0.3821,
+        "6. Conclusion": 0.0215,
+        "References": 0.0339,
+        "7. Appendix": 0.0241
+      },
+      "confidence": 0.2172,
+      "answer_confidence": 0.3821,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.3
+    },
+    {
+      "case": "c1",
+      "doc": "screenparse",
+      "type": "lexical",
+      "step": 2,
+      "node": "5. Experiments",
+      "state": {
+        "question": "In the experiments, which baselines is ScreenVLM compared against?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "5. Experiments"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 40,
+        "state_tokens": 42,
+        "total": 116,
+        "ok": true
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "5.3. Baselines",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.3487,
+      "choice": "5.3. Baselines",
+      "probabilities": {
+        "5.1. Implementation details.": 0.1749,
+        "5.2. Experimental Setting": 0.2044,
+        "5.3. Baselines": 0.3487,
+        "5.4. Experimental Results": 0.1644,
+        "5.5. Ablation Study and Analysis": 0.1076
+      },
+      "confidence": 0.0472,
+      "answer_confidence": 0.3487,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 23.1
+    },
+    {
+      "case": "c2",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 40,
+        "total": 111,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "4. Method",
+      "correct": false,
+      "expected_rank": 4,
+      "p_expected": 0.0973,
+      "choice": "3. Dataset: ScreenParse",
+      "probabilities": {
+        "Abstract": 0.0712,
+        "1. Introduction": 0.0439,
+        "2. Related Work": 0.1272,
+        "3. Dataset: ScreenParse": 0.347,
+        "4. Method": 0.0973,
+        "5. Experiments": 0.0704,
+        "6. Conclusion": 0.0438,
+        "References": 0.0227,
+        "7. Appendix": 0.1765
+      },
+      "confidence": 0.1364,
+      "answer_confidence": 0.347,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.4
+    },
+    {
+      "case": "c2",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 2,
+      "node": "4. Method",
+      "state": {
+        "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "4. Method"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 33,
+        "state_tokens": 45,
+        "total": 112,
+        "ok": true
+      },
+      "k": 3,
+      "chance": 0.3333,
+      "expected": "4.3. Lightweight Vision-Language Model",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.4165,
+      "choice": "4.3. Lightweight Vision-Language Model",
+      "probabilities": {
+        "4.1. Problem Formulation": 0.2741,
+        "4.2. ScreenTag: Compact Screen Structure Representation": 0.3094,
+        "4.3. Lightweight Vision-Language Model": 0.4165
+      },
+      "confidence": 0.0146,
+      "answer_confidence": 0.4165,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 22.7
+    },
+    {
+      "case": "c3",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 42,
+        "total": 113,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 8,
+      "p_expected": 0.0555,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.3447,
+        "1. Introduction": 0.0566,
+        "2. Related Work": 0.1099,
+        "3. Dataset: ScreenParse": 0.1401,
+        "4. Method": 0.1196,
+        "5. Experiments": 0.0928,
+        "6. Conclusion": 0.0594,
+        "References": 0.0215,
+        "7. Appendix": 0.0555
+      },
+      "confidence": 0.1203,
+      "answer_confidence": 0.3447,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.9
+    },
+    {
+      "case": "c3",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "step": 2,
+      "node": "7. Appendix",
+      "state": {
+        "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 102,
+        "state_tokens": 47,
+        "total": 183,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7.2. Training Details",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.1338,
+      "choice": "7.8. VLM Prompt for Class Refinement",
+      "probabilities": {
+        "7.1. Screen Parsing Label Set (ScreenTag)": 0.0903,
+        "7.2. Training Details": 0.1338,
+        "7.3. Evaluation Metrics": 0.1077,
+        "7.4. Additional Results": 0.0844,
+        "7.5. Qualitative Results": 0.0678,
+        "7.6. Webshot Pipeline Specifications": 0.108,
+        "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering": 0.14,
+        "7.8. VLM Prompt for Class Refinement": 0.1457,
+        "7.9. VLM Inference Prompts for Evaluation": 0.1223
+      },
+      "confidence": 0.0121,
+      "answer_confidence": 0.1457,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 27.5
+    },
+    {
+      "case": "c4",
+      "doc": "screenparse",
+      "type": "lexical",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 41,
+        "total": 112,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 6,
+      "p_expected": 0.0786,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.2177,
+        "1. Introduction": 0.0696,
+        "2. Related Work": 0.1135,
+        "3. Dataset: ScreenParse": 0.1769,
+        "4. Method": 0.1615,
+        "5. Experiments": 0.098,
+        "6. Conclusion": 0.0582,
+        "References": 0.0259,
+        "7. Appendix": 0.0786
+      },
+      "confidence": 0.0656,
+      "answer_confidence": 0.2177,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.1
+    },
+    {
+      "case": "c4",
+      "doc": "screenparse",
+      "type": "lexical",
+      "step": 2,
+      "node": "7. Appendix",
+      "state": {
+        "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 102,
+        "state_tokens": 46,
+        "total": 182,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7.6. Webshot Pipeline Specifications",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.2055,
+      "choice": "7.6. Webshot Pipeline Specifications",
+      "probabilities": {
+        "7.1. Screen Parsing Label Set (ScreenTag)": 0.0928,
+        "7.2. Training Details": 0.1204,
+        "7.3. Evaluation Metrics": 0.1293,
+        "7.4. Additional Results": 0.0812,
+        "7.5. Qualitative Results": 0.06,
+        "7.6. Webshot Pipeline Specifications": 0.2055,
+        "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering": 0.1093,
+        "7.8. VLM Prompt for Class Refinement": 0.1007,
+        "7.9. VLM Inference Prompts for Evaluation": 0.1008
+      },
+      "confidence": 0.025,
+      "answer_confidence": 0.2055,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 27.8
+    },
+    {
+      "case": "c4",
+      "doc": "screenparse",
+      "type": "lexical",
+      "step": 3,
+      "node": "7.6. Webshot Pipeline Specifications",
+      "state": {
+        "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix",
+          "7.6. Webshot Pipeline Specifications"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 89,
+        "state_tokens": 58,
+        "total": 181,
+        "ok": true
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.5752,
+      "choice": "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION",
+      "probabilities": {
+        "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION": 0.5752,
+        "7.6.2. DENSE UI ELEMENT EXTRACTION WITH DOM HIERARCHY": 0.1324,
+        "7.6.3. TEXT EXTRACTION AND OCR": 0.0749,
+        "7.6.4. FILTERING AND SAMPLE VALIDATION": 0.1031,
+        "7.6.5. SCREENTAG SERIALIZATION": 0.1145
+      },
+      "confidence": 0.2157,
+      "answer_confidence": 0.5752,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 27.5
+    },
+    {
+      "case": "c5",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 39,
+        "total": 110,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "3. Dataset: ScreenParse",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.0541,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.6992,
+        "1. Introduction": 0.048,
+        "2. Related Work": 0.0413,
+        "3. Dataset: ScreenParse": 0.0541,
+        "4. Method": 0.0421,
+        "5. Experiments": 0.0446,
+        "6. Conclusion": 0.0202,
+        "References": 0.0212,
+        "7. Appendix": 0.0293
+      },
+      "confidence": 0.4442,
+      "answer_confidence": 0.6992,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.2
+    },
+    {
+      "case": "c5",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 2,
+      "node": "3. Dataset: ScreenParse",
+      "state": {
+        "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "3. Dataset: ScreenParse"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 18,
+        "state_tokens": 48,
+        "total": 100,
+        "ok": true
+      },
+      "k": 2,
+      "chance": 0.5,
+      "expected": "3.2. Dataset Pipeline: Webshot",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.4864,
+      "choice": "3.1. Overview",
+      "probabilities": {
+        "3.1. Overview": 0.5136,
+        "3.2. Dataset Pipeline: Webshot": 0.4864
+      },
+      "confidence": 0.0005,
+      "answer_confidence": 0.5136,
+      "bucket": "2",
+      "temperature": 1.9063563346862793,
+      "latency_ms": 22.0
+    },
+    {
+      "case": "c6",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "What proportion of the screenshots is used for training, validation and testing?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 38,
+        "total": 109,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "3. Dataset: ScreenParse",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.1071,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.4744,
+        "1. Introduction": 0.1182,
+        "2. Related Work": 0.0757,
+        "3. Dataset: ScreenParse": 0.1071,
+        "4. Method": 0.0716,
+        "5. Experiments": 0.0598,
+        "6. Conclusion": 0.044,
+        "References": 0.0133,
+        "7. Appendix": 0.0358
+      },
+      "confidence": 0.2207,
+      "answer_confidence": 0.4744,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.5
+    },
+    {
+      "case": "c6",
+      "doc": "screenparse",
+      "type": "misleading_title",
+      "step": 2,
+      "node": "3. Dataset: ScreenParse",
+      "state": {
+        "question": "What proportion of the screenshots is used for training, validation and testing?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "3. Dataset: ScreenParse"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 18,
+        "state_tokens": 47,
+        "total": 99,
+        "ok": true
+      },
+      "k": 2,
+      "chance": 0.5,
+      "expected": "3.1. Overview",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.4064,
+      "choice": "3.2. Dataset Pipeline: Webshot",
+      "probabilities": {
+        "3.1. Overview": 0.4064,
+        "3.2. Dataset Pipeline: Webshot": 0.5936
+      },
+      "confidence": 0.0254,
+      "answer_confidence": 0.5936,
+      "bucket": "2",
+      "temperature": 1.9063563346862793,
+      "latency_ms": 22.0
+    },
+    {
+      "case": "c7",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "state": {
+        "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 37,
+        "state_tokens": 41,
+        "total": 112,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 6,
+      "p_expected": 0.0696,
+      "choice": "3. Dataset: ScreenParse",
+      "probabilities": {
+        "Abstract": 0.1873,
+        "1. Introduction": 0.067,
+        "2. Related Work": 0.092,
+        "3. Dataset: ScreenParse": 0.2015,
+        "4. Method": 0.1738,
+        "5. Experiments": 0.1116,
+        "6. Conclusion": 0.0646,
+        "References": 0.0327,
+        "7. Appendix": 0.0696
+      },
+      "confidence": 0.0624,
+      "answer_confidence": 0.2015,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 22.6
+    },
+    {
+      "case": "c7",
+      "doc": "screenparse",
+      "type": "paraphrase",
+      "step": 2,
+      "node": "7. Appendix",
+      "state": {
+        "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 102,
+        "state_tokens": 46,
+        "total": 182,
+        "ok": true
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7.3. Evaluation Metrics",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.1548,
+      "choice": "7.2. Training Details",
+      "probabilities": {
+        "7.1. Screen Parsing Label Set (ScreenTag)": 0.0819,
+        "7.2. Training Details": 0.3553,
+        "7.3. Evaluation Metrics": 0.1548,
+        "7.4. Additional Results": 0.0867,
+        "7.5. Qualitative Results": 0.0384,
+        "7.6. Webshot Pipeline Specifications": 0.0985,
+        "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering": 0.0709,
+        "7.8. VLM Prompt for Class Refinement": 0.0564,
+        "7.9. VLM Inference Prompts for Evaluation": 0.057
+      },
+      "confidence": 0.117,
+      "answer_confidence": 0.3553,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 27.7
+    },
+    {
+      "case": "u1",
+      "doc": "unfolding",
+      "type": "lexical",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 53,
+        "total": 175,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "2 The Fused Multi-Shell Decoder",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.6079,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.0029,
+        "2 The Fused Multi-Shell Decoder": 0.6079,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.3253,
+        "4 End-to-End Integration": 0.044,
+        "5 Evaluation": 0.0015,
+        "6 Limitations and Validity Envelope": 0.0068,
+        "7 Related Work": 0.007,
+        "8 Conclusion": 0.0013,
+        "9 Availability": 0.0006,
+        "Use of generative AI": 0.0001,
+        "References": 0.0004,
+        "A Statistical tests on the scale curve": 0.0005,
+        "B Protocol pre-registered criteria and provenance": 0.0017
+      },
+      "confidence": 0.6365,
+      "answer_confidence": 0.6079,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 27.0
+    },
+    {
+      "case": "u1",
+      "doc": "unfolding",
+      "type": "lexical",
+      "step": 2,
+      "node": "2 The Fused Multi-Shell Decoder",
+      "state": {
+        "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "2 The Fused Multi-Shell Decoder"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 33,
+        "state_tokens": 64,
+        "total": 131,
+        "ok": true
+      },
+      "k": 4,
+      "chance": 0.25,
+      "expected": "2.4 Verification",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.1812,
+      "choice": "2.2 Unfolding at load time",
+      "probabilities": {
+        "2.1 What a Λ24 index is": 0.1855,
+        "2.2 Unfolding at load time": 0.4579,
+        "2.3 The kernel": 0.1754,
+        "2.4 Verification": 0.1812
+      },
+      "confidence": 0.073,
+      "answer_confidence": 0.4579,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 26.0
+    },
+    {
+      "case": "u2",
+      "doc": "unfolding",
+      "type": "lexical",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 53,
+        "total": 175,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.3016,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.0043,
+        "2 The Fused Multi-Shell Decoder": 0.4917,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.3016,
+        "4 End-to-End Integration": 0.1188,
+        "5 Evaluation": 0.0111,
+        "6 Limitations and Validity Envelope": 0.0195,
+        "7 Related Work": 0.0376,
+        "8 Conclusion": 0.0046,
+        "9 Availability": 0.0006,
+        "Use of generative AI": 0.0004,
+        "References": 0.0012,
+        "A Statistical tests on the scale curve": 0.0012,
+        "B Protocol pre-registered criteria and provenance": 0.0072
+      },
+      "confidence": 0.4847,
+      "answer_confidence": 0.4917,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 27.3
+    },
+    {
+      "case": "u2",
+      "doc": "unfolding",
+      "type": "lexical",
+      "step": 2,
+      "node": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "state": {
+        "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "3 VRAM Layouts: the In-VRAM Rate as a Design Axis"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 45,
+        "state_tokens": 72,
+        "total": 151,
+        "ok": true
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "3.4 Attribution to the DRAM floor",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.2715,
+      "choice": "3.2 The layout scale",
+      "probabilities": {
+        "3.1 Protocol": 0.1037,
+        "3.2 The layout scale": 0.2756,
+        "3.3 Where deployed 4-bit and 2-bit kernels sit": 0.2001,
+        "3.4 Attribution to the DRAM floor": 0.2715,
+        "3.5 A second memory hierarchy": 0.1492
+      },
+      "confidence": 0.037,
+      "answer_confidence": 0.2756,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 27.1
+    },
+    {
+      "case": "u3",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "Where can the code and the quantized 4B model be downloaded?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 53,
+        "total": 175,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "9 Availability",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.6268,
+      "choice": "9 Availability",
+      "probabilities": {
+        "1 Introduction": 0.0025,
+        "2 The Fused Multi-Shell Decoder": 0.3042,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.0365,
+        "4 End-to-End Integration": 0.0238,
+        "5 Evaluation": 0.0007,
+        "6 Limitations and Validity Envelope": 0.0005,
+        "7 Related Work": 0.003,
+        "8 Conclusion": 0.0001,
+        "9 Availability": 0.6268,
+        "Use of generative AI": 0.0001,
+        "References": 0.0002,
+        "A Statistical tests on the scale curve": 0.0004,
+        "B Protocol pre-registered criteria and provenance": 0.0011
+      },
+      "confidence": 0.6411,
+      "answer_confidence": 0.6268,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 26.8
+    },
+    {
+      "case": "u4",
+      "doc": "unfolding",
+      "type": "paraphrase",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "How were the MMLU questions sampled, and how many per subject?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 54,
+        "total": 176,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "5 Evaluation",
+      "correct": false,
+      "expected_rank": 6,
+      "p_expected": 0.014,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.0159,
+        "2 The Fused Multi-Shell Decoder": 0.4334,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.2144,
+        "4 End-to-End Integration": 0.1232,
+        "5 Evaluation": 0.014,
+        "6 Limitations and Validity Envelope": 0.0097,
+        "7 Related Work": 0.1634,
+        "8 Conclusion": 0.008,
+        "9 Availability": 0.0005,
+        "Use of generative AI": 0.0004,
+        "References": 0.0022,
+        "A Statistical tests on the scale curve": 0.0023,
+        "B Protocol pre-registered criteria and provenance": 0.0126
+      },
+      "confidence": 0.3976,
+      "answer_confidence": 0.4334,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 28.0
+    },
+    {
+      "case": "u5",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "How long does loading the 4B model take, unfolding included, compared with the f16 weights?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 59,
+        "total": 181,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "6 Limitations and Validity Envelope",
+      "correct": false,
+      "expected_rank": 5,
+      "p_expected": 0.0089,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.002,
+        "2 The Fused Multi-Shell Decoder": 0.4225,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.165,
+        "4 End-to-End Integration": 0.2553,
+        "5 Evaluation": 0.1356,
+        "6 Limitations and Validity Envelope": 0.0089,
+        "7 Related Work": 0.0058,
+        "8 Conclusion": 0.0003,
+        "9 Availability": 0.0004,
+        "Use of generative AI": 0.0001,
+        "References": 0.0011,
+        "A Statistical tests on the scale curve": 0.0008,
+        "B Protocol pre-registered criteria and provenance": 0.0022
+      },
+      "confidence": 0.4548,
+      "answer_confidence": 0.4225,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 27.4
+    },
+    {
+      "case": "u6",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "state": {
+        "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 88,
+        "state_tokens": 58,
+        "total": 180,
+        "ok": true
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.1303,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.0046,
+        "2 The Fused Multi-Shell Decoder": 0.4764,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.1303,
+        "4 End-to-End Integration": 0.3565,
+        "5 Evaluation": 0.0126,
+        "6 Limitations and Validity Envelope": 0.0039,
+        "7 Related Work": 0.0109,
+        "8 Conclusion": 0.0012,
+        "9 Availability": 0.0002,
+        "Use of generative AI": 0.0001,
+        "References": 0.001,
+        "A Statistical tests on the scale curve": 0.001,
+        "B Protocol pre-registered criteria and provenance": 0.0012
+      },
+      "confidence": 0.5438,
+      "answer_confidence": 0.4764,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 27.9
+    },
+    {
+      "case": "u6",
+      "doc": "unfolding",
+      "type": "misleading_title",
+      "step": 2,
+      "node": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "state": {
+        "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "3 VRAM Layouts: the In-VRAM Rate as a Design Axis"
+        ]
+      },
+      "budget": {
+        "instruction_tokens": 30,
+        "option_tokens": 45,
+        "state_tokens": 77,
+        "total": 156,
+        "ok": true
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "3.5 A second memory hierarchy",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.1855,
+      "choice": "3.2 The layout scale",
+      "probabilities": {
+        "3.1 Protocol": 0.1016,
+        "3.2 The layout scale": 0.3179,
+        "3.3 Where deployed 4-bit and 2-bit kernels sit": 0.2261,
+        "3.4 Attribution to the DRAM floor": 0.1689,
+        "3.5 A second memory hierarchy": 0.1855
+      },
+      "confidence": 0.0396,
+      "answer_confidence": 0.3179,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 26.2
+    }
+  ],
+  "history_replays": [
+    {
+      "case": "c2",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "3. Dataset: ScreenParse",
+      "state": {
+        "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"3. Dataset: ScreenParse\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "4. Method",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.0166,
+      "choice": "3. Dataset: ScreenParse",
+      "probabilities": {
+        "Abstract": 0.0107,
+        "1. Introduction": 0.0143,
+        "2. Related Work": 0.0552,
+        "3. Dataset: ScreenParse": 0.8595,
+        "4. Method": 0.0166,
+        "5. Experiments": 0.0074,
+        "6. Conclusion": 0.0092,
+        "References": 0.0147,
+        "7. Appendix": 0.0124
+      },
+      "confidence": 0.6982,
+      "answer_confidence": 0.8595,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 25.9
+    },
+    {
+      "case": "c3",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "Abstract",
+      "state": {
+        "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"Abstract\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 7,
+      "p_expected": 0.0105,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.8555,
+        "1. Introduction": 0.0224,
+        "2. Related Work": 0.03,
+        "3. Dataset: ScreenParse": 0.036,
+        "4. Method": 0.0193,
+        "5. Experiments": 0.0118,
+        "6. Conclusion": 0.0091,
+        "References": 0.0053,
+        "7. Appendix": 0.0105
+      },
+      "confidence": 0.6856,
+      "answer_confidence": 0.8555,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 25.4
+    },
+    {
+      "case": "c3",
+      "step": 2,
+      "node": "7. Appendix",
+      "first_choice": "7.8. VLM Prompt for Class Refinement",
+      "state": {
+        "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix"
+        ],
+        "history": [
+          "Branch \"7.8. VLM Prompt for Class Refinement\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7.2. Training Details",
+      "correct": false,
+      "expected_rank": 4,
+      "p_expected": 0.0495,
+      "choice": "7.8. VLM Prompt for Class Refinement",
+      "probabilities": {
+        "7.1. Screen Parsing Label Set (ScreenTag)": 0.1136,
+        "7.2. Training Details": 0.0495,
+        "7.3. Evaluation Metrics": 0.035,
+        "7.4. Additional Results": 0.0252,
+        "7.5. Qualitative Results": 0.019,
+        "7.6. Webshot Pipeline Specifications": 0.0353,
+        "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering": 0.0699,
+        "7.8. VLM Prompt for Class Refinement": 0.6189,
+        "7.9. VLM Inference Prompts for Evaluation": 0.0336
+      },
+      "confidence": 0.3645,
+      "answer_confidence": 0.6189,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 29.6
+    },
+    {
+      "case": "c4",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "Abstract",
+      "state": {
+        "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"Abstract\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 6,
+      "p_expected": 0.0055,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.929,
+        "1. Introduction": 0.0127,
+        "2. Related Work": 0.0156,
+        "3. Dataset: ScreenParse": 0.0124,
+        "4. Method": 0.0096,
+        "5. Experiments": 0.0054,
+        "6. Conclusion": 0.005,
+        "References": 0.0049,
+        "7. Appendix": 0.0055
+      },
+      "confidence": 0.8194,
+      "answer_confidence": 0.929,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 25.8
+    },
+    {
+      "case": "c5",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "Abstract",
+      "state": {
+        "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"Abstract\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "3. Dataset: ScreenParse",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.1252,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.7108,
+        "1. Introduction": 0.0298,
+        "2. Related Work": 0.0562,
+        "3. Dataset: ScreenParse": 0.1252,
+        "4. Method": 0.0304,
+        "5. Experiments": 0.0147,
+        "6. Conclusion": 0.0092,
+        "References": 0.0143,
+        "7. Appendix": 0.0094
+      },
+      "confidence": 0.506,
+      "answer_confidence": 0.7108,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 26.1
+    },
+    {
+      "case": "c5",
+      "step": 2,
+      "node": "3. Dataset: ScreenParse",
+      "first_choice": "3.1. Overview",
+      "state": {
+        "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "3. Dataset: ScreenParse"
+        ],
+        "history": [
+          "Branch \"3.1. Overview\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 2,
+      "chance": 0.5,
+      "expected": "3.2. Dataset Pipeline: Webshot",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.3365,
+      "choice": "3.1. Overview",
+      "probabilities": {
+        "3.1. Overview": 0.6635,
+        "3.2. Dataset Pipeline: Webshot": 0.3365
+      },
+      "confidence": 0.0786,
+      "answer_confidence": 0.6635,
+      "bucket": "2",
+      "temperature": 1.9063563346862793,
+      "latency_ms": 23.3
+    },
+    {
+      "case": "c6",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "Abstract",
+      "state": {
+        "question": "What proportion of the screenshots is used for training, validation and testing?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"Abstract\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "3. Dataset: ScreenParse",
+      "correct": false,
+      "expected_rank": 3,
+      "p_expected": 0.0149,
+      "choice": "Abstract",
+      "probabilities": {
+        "Abstract": 0.9332,
+        "1. Introduction": 0.0153,
+        "2. Related Work": 0.0148,
+        "3. Dataset: ScreenParse": 0.0149,
+        "4. Method": 0.007,
+        "5. Experiments": 0.0048,
+        "6. Conclusion": 0.0029,
+        "References": 0.003,
+        "7. Appendix": 0.0041
+      },
+      "confidence": 0.8313,
+      "answer_confidence": 0.9332,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 23.8
+    },
+    {
+      "case": "c6",
+      "step": 2,
+      "node": "3. Dataset: ScreenParse",
+      "first_choice": "3.2. Dataset Pipeline: Webshot",
+      "state": {
+        "question": "What proportion of the screenshots is used for training, validation and testing?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "3. Dataset: ScreenParse"
+        ],
+        "history": [
+          "Branch \"3.2. Dataset Pipeline: Webshot\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 2,
+      "chance": 0.5,
+      "expected": "3.1. Overview",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.3198,
+      "choice": "3.2. Dataset Pipeline: Webshot",
+      "probabilities": {
+        "3.1. Overview": 0.3198,
+        "3.2. Dataset Pipeline: Webshot": 0.6802
+      },
+      "confidence": 0.0959,
+      "answer_confidence": 0.6802,
+      "bucket": "2",
+      "temperature": 1.9063563346862793,
+      "latency_ms": 23.3
+    },
+    {
+      "case": "c7",
+      "step": 1,
+      "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+      "first_choice": "3. Dataset: ScreenParse",
+      "state": {
+        "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision"
+        ],
+        "history": [
+          "Branch \"3. Dataset: ScreenParse\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7. Appendix",
+      "correct": false,
+      "expected_rank": 6,
+      "p_expected": 0.0162,
+      "choice": "3. Dataset: ScreenParse",
+      "probabilities": {
+        "Abstract": 0.0152,
+        "1. Introduction": 0.0225,
+        "2. Related Work": 0.0918,
+        "3. Dataset: ScreenParse": 0.7748,
+        "4. Method": 0.0347,
+        "5. Experiments": 0.0108,
+        "6. Conclusion": 0.0137,
+        "References": 0.0204,
+        "7. Appendix": 0.0162
+      },
+      "confidence": 0.574,
+      "answer_confidence": 0.7748,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 26.0
+    },
+    {
+      "case": "c7",
+      "step": 2,
+      "node": "7. Appendix",
+      "first_choice": "7.2. Training Details",
+      "state": {
+        "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+        "path": [
+          "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "7. Appendix"
+        ],
+        "history": [
+          "Branch \"7.2. Training Details\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 9,
+      "chance": 0.1111,
+      "expected": "7.3. Evaluation Metrics",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.053,
+      "choice": "7.2. Training Details",
+      "probabilities": {
+        "7.1. Screen Parsing Label Set (ScreenTag)": 0.0451,
+        "7.2. Training Details": 0.7337,
+        "7.3. Evaluation Metrics": 0.053,
+        "7.4. Additional Results": 0.0183,
+        "7.5. Qualitative Results": 0.0165,
+        "7.6. Webshot Pipeline Specifications": 0.0262,
+        "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering": 0.0301,
+        "7.8. VLM Prompt for Class Refinement": 0.0378,
+        "7.9. VLM Inference Prompts for Evaluation": 0.0393
+      },
+      "confidence": 0.4924,
+      "answer_confidence": 0.7337,
+      "bucket": "6-10",
+      "temperature": 1.0000158548355103,
+      "latency_ms": 29.0
+    },
+    {
+      "case": "u1",
+      "step": 2,
+      "node": "2 The Fused Multi-Shell Decoder",
+      "first_choice": "2.2 Unfolding at load time",
+      "state": {
+        "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "2 The Fused Multi-Shell Decoder"
+        ],
+        "history": [
+          "Branch \"2.2 Unfolding at load time\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 4,
+      "chance": 0.25,
+      "expected": "2.4 Verification",
+      "correct": false,
+      "expected_rank": 4,
+      "p_expected": 0.1589,
+      "choice": "2.2 Unfolding at load time",
+      "probabilities": {
+        "2.1 What a Λ24 index is": 0.1684,
+        "2.2 Unfolding at load time": 0.5071,
+        "2.3 The kernel": 0.1656,
+        "2.4 Verification": 0.1589
+      },
+      "confidence": 0.1095,
+      "answer_confidence": 0.5071,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 26.3
+    },
+    {
+      "case": "u2",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "first_choice": "2 The Fused Multi-Shell Decoder",
+      "state": {
+        "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ],
+        "history": [
+          "Branch \"2 The Fused Multi-Shell Decoder\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.5168,
+      "choice": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "probabilities": {
+        "1 Introduction": 0.0193,
+        "2 The Fused Multi-Shell Decoder": 0.2219,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.5168,
+        "4 End-to-End Integration": 0.0311,
+        "5 Evaluation": 0.0202,
+        "6 Limitations and Validity Envelope": 0.0893,
+        "7 Related Work": 0.0572,
+        "8 Conclusion": 0.0057,
+        "9 Availability": 0.011,
+        "Use of generative AI": 0.0011,
+        "References": 0.0087,
+        "A Statistical tests on the scale curve": 0.0058,
+        "B Protocol pre-registered criteria and provenance": 0.0118
+      },
+      "confidence": 0.4043,
+      "answer_confidence": 0.5168,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 29.5
+    },
+    {
+      "case": "u2",
+      "step": 2,
+      "node": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "first_choice": "3.2 The layout scale",
+      "state": {
+        "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "3 VRAM Layouts: the In-VRAM Rate as a Design Axis"
+        ],
+        "history": [
+          "Branch \"3.2 The layout scale\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "3.4 Attribution to the DRAM floor",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.2456,
+      "choice": "3.2 The layout scale",
+      "probabilities": {
+        "3.1 Protocol": 0.0961,
+        "3.2 The layout scale": 0.3452,
+        "3.3 Where deployed 4-bit and 2-bit kernels sit": 0.1874,
+        "3.4 Attribution to the DRAM floor": 0.2456,
+        "3.5 A second memory hierarchy": 0.1256
+      },
+      "confidence": 0.0608,
+      "answer_confidence": 0.3452,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 27.1
+    },
+    {
+      "case": "u4",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "first_choice": "2 The Fused Multi-Shell Decoder",
+      "state": {
+        "question": "How were the MMLU questions sampled, and how many per subject?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ],
+        "history": [
+          "Branch \"2 The Fused Multi-Shell Decoder\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "5 Evaluation",
+      "correct": false,
+      "expected_rank": 10,
+      "p_expected": 0.0084,
+      "choice": "2 The Fused Multi-Shell Decoder",
+      "probabilities": {
+        "1 Introduction": 0.0198,
+        "2 The Fused Multi-Shell Decoder": 0.6974,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.159,
+        "4 End-to-End Integration": 0.0261,
+        "5 Evaluation": 0.0084,
+        "6 Limitations and Validity Envelope": 0.0145,
+        "7 Related Work": 0.0394,
+        "8 Conclusion": 0.0054,
+        "9 Availability": 0.0095,
+        "Use of generative AI": 0.0012,
+        "References": 0.0096,
+        "A Statistical tests on the scale curve": 0.0009,
+        "B Protocol pre-registered criteria and provenance": 0.0088
+      },
+      "confidence": 0.5638,
+      "answer_confidence": 0.6974,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 29.5
+    },
+    {
+      "case": "u5",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "first_choice": "2 The Fused Multi-Shell Decoder",
+      "state": {
+        "question": "How long does loading the 4B model take, unfolding included, compared with the f16 weights?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ],
+        "history": [
+          "Branch \"2 The Fused Multi-Shell Decoder\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "6 Limitations and Validity Envelope",
+      "correct": false,
+      "expected_rank": 4,
+      "p_expected": 0.0521,
+      "choice": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "probabilities": {
+        "1 Introduction": 0.0151,
+        "2 The Fused Multi-Shell Decoder": 0.313,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.4518,
+        "4 End-to-End Integration": 0.0581,
+        "5 Evaluation": 0.035,
+        "6 Limitations and Validity Envelope": 0.0521,
+        "7 Related Work": 0.0454,
+        "8 Conclusion": 0.0033,
+        "9 Availability": 0.0085,
+        "Use of generative AI": 0.0003,
+        "References": 0.0071,
+        "A Statistical tests on the scale curve": 0.0035,
+        "B Protocol pre-registered criteria and provenance": 0.0068
+      },
+      "confidence": 0.4101,
+      "answer_confidence": 0.4518,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 29.7
+    },
+    {
+      "case": "u6",
+      "step": 1,
+      "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+      "first_choice": "2 The Fused Multi-Shell Decoder",
+      "state": {
+        "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights"
+        ],
+        "history": [
+          "Branch \"2 The Fused Multi-Shell Decoder\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 13,
+      "chance": 0.0769,
+      "expected": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "correct": true,
+      "expected_rank": 1,
+      "p_expected": 0.5413,
+      "choice": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "probabilities": {
+        "1 Introduction": 0.0244,
+        "2 The Fused Multi-Shell Decoder": 0.129,
+        "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.5413,
+        "4 End-to-End Integration": 0.1398,
+        "5 Evaluation": 0.0436,
+        "6 Limitations and Validity Envelope": 0.0303,
+        "7 Related Work": 0.0517,
+        "8 Conclusion": 0.0085,
+        "9 Availability": 0.0116,
+        "Use of generative AI": 0.0012,
+        "References": 0.01,
+        "A Statistical tests on the scale curve": 0.0041,
+        "B Protocol pre-registered criteria and provenance": 0.0046
+      },
+      "confidence": 0.3953,
+      "answer_confidence": 0.5413,
+      "bucket": "11+",
+      "temperature": 0.5,
+      "latency_ms": 29.3
+    },
+    {
+      "case": "u6",
+      "step": 2,
+      "node": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+      "first_choice": "3.2 The layout scale",
+      "state": {
+        "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+        "path": [
+          "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "3 VRAM Layouts: the In-VRAM Rate as a Design Axis"
+        ],
+        "history": [
+          "Branch \"3.2 The layout scale\" was explored, the answer was not found there."
+        ]
+      },
+      "k": 5,
+      "chance": 0.2,
+      "expected": "3.5 A second memory hierarchy",
+      "correct": false,
+      "expected_rank": 2,
+      "p_expected": 0.1296,
+      "choice": "3.2 The layout scale",
+      "probabilities": {
+        "3.1 Protocol": 0.0899,
+        "3.2 The layout scale": 0.5778,
+        "3.3 Where deployed 4-bit and 2-bit kernels sit": 0.1053,
+        "3.4 Attribution to the DRAM floor": 0.0974,
+        "3.5 A second memory hierarchy": 0.1296
+      },
+      "confidence": 0.2157,
+      "answer_confidence": 0.5778,
+      "bucket": "3-5",
+      "temperature": 1.7601518630981445,
+      "latency_ms": 27.5
+    }
+  ],
+  "greedy_walks": [
+    {
+      "question": "In the experiments, which baselines is ScreenVLM compared against?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "5. Experiments",
+        "5.3. Baselines"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "5. Experiments",
+          "probabilities": {
+            "Abstract": 0.0241,
+            "1. Introduction": 0.0351,
+            "2. Related Work": 0.1297,
+            "3. Dataset: ScreenParse": 0.228,
+            "4. Method": 0.1216,
+            "5. Experiments": 0.3821,
+            "6. Conclusion": 0.0215,
+            "References": 0.0339,
+            "7. Appendix": 0.0241
+          },
+          "confidence": 0.2172,
+          "answer_confidence": 0.3821,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 24.0
+        },
+        {
+          "node": "5. Experiments",
+          "options": [
+            "5.1. Implementation details.",
+            "5.2. Experimental Setting",
+            "5.3. Baselines",
+            "5.4. Experimental Results",
+            "5.5. Ablation Study and Analysis"
+          ],
+          "choice": "5.3. Baselines",
+          "probabilities": {
+            "5.1. Implementation details.": 0.1749,
+            "5.2. Experimental Setting": 0.2044,
+            "5.3. Baselines": 0.3487,
+            "5.4. Experimental Results": 0.1644,
+            "5.5. Ablation Study and Analysis": 0.1076
+          },
+          "confidence": 0.0472,
+          "answer_confidence": 0.3487,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 24.5
+        }
+      ]
+    },
+    {
+      "question": "Which pretrained checkpoint is ScreenVLM initialized from, and why was it chosen?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.2. Dataset Pipeline: Webshot"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "3. Dataset: ScreenParse",
+          "probabilities": {
+            "Abstract": 0.0712,
+            "1. Introduction": 0.0439,
+            "2. Related Work": 0.1272,
+            "3. Dataset: ScreenParse": 0.347,
+            "4. Method": 0.0973,
+            "5. Experiments": 0.0704,
+            "6. Conclusion": 0.0438,
+            "References": 0.0227,
+            "7. Appendix": 0.1765
+          },
+          "confidence": 0.1364,
+          "answer_confidence": 0.347,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 24.0
+        },
+        {
+          "node": "3. Dataset: ScreenParse",
+          "options": [
+            "3.1. Overview",
+            "3.2. Dataset Pipeline: Webshot"
+          ],
+          "choice": "3.2. Dataset Pipeline: Webshot",
+          "probabilities": {
+            "3.1. Overview": 0.4115,
+            "3.2. Dataset Pipeline: Webshot": 0.5885
+          },
+          "confidence": 0.0227,
+          "answer_confidence": 0.5885,
+          "bucket": "2",
+          "temperature": 1.9063563346862793,
+          "latency_ms": 25.0
+        }
+      ]
+    },
+    {
+      "question": "In the structure-aware loss, what weight values are given to tag tokens and location tokens?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "Abstract"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "Abstract",
+          "probabilities": {
+            "Abstract": 0.3447,
+            "1. Introduction": 0.0566,
+            "2. Related Work": 0.1099,
+            "3. Dataset: ScreenParse": 0.1401,
+            "4. Method": 0.1196,
+            "5. Experiments": 0.0928,
+            "6. Conclusion": 0.0594,
+            "References": 0.0215,
+            "7. Appendix": 0.0555
+          },
+          "confidence": 0.1203,
+          "answer_confidence": 0.3447,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 25.7
+        }
+      ]
+    },
+    {
+      "question": "Which viewport size and navigation timeout are used when rendering pages and standardizing screenshots?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "Abstract"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "Abstract",
+          "probabilities": {
+            "Abstract": 0.2177,
+            "1. Introduction": 0.0696,
+            "2. Related Work": 0.1135,
+            "3. Dataset: ScreenParse": 0.1769,
+            "4. Method": 0.1615,
+            "5. Experiments": 0.098,
+            "6. Conclusion": 0.0582,
+            "References": 0.0259,
+            "7. Appendix": 0.0786
+          },
+          "confidence": 0.0656,
+          "answer_confidence": 0.2177,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 27.6
+        }
+      ]
+    },
+    {
+      "question": "Where do the crawled web pages come from, and how many addresses were collected?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "Abstract"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "Abstract",
+          "probabilities": {
+            "Abstract": 0.6992,
+            "1. Introduction": 0.048,
+            "2. Related Work": 0.0413,
+            "3. Dataset: ScreenParse": 0.0541,
+            "4. Method": 0.0421,
+            "5. Experiments": 0.0446,
+            "6. Conclusion": 0.0202,
+            "References": 0.0212,
+            "7. Appendix": 0.0293
+          },
+          "confidence": 0.4442,
+          "answer_confidence": 0.6992,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 25.8
+        }
+      ]
+    },
+    {
+      "question": "What proportion of the screenshots is used for training, validation and testing?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "Abstract"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "Abstract",
+          "probabilities": {
+            "Abstract": 0.4744,
+            "1. Introduction": 0.1182,
+            "2. Related Work": 0.0757,
+            "3. Dataset: ScreenParse": 0.1071,
+            "4. Method": 0.0716,
+            "5. Experiments": 0.0598,
+            "6. Conclusion": 0.044,
+            "References": 0.0133,
+            "7. Appendix": 0.0358
+          },
+          "confidence": 0.2207,
+          "answer_confidence": 0.4744,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 23.9
+        }
+      ]
+    },
+    {
+      "question": "How is the pixel-coverage overlap between predicted and ground-truth boxes formally defined?",
+      "path": [
+        "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+        "3. Dataset: ScreenParse",
+        "3.2. Dataset Pipeline: Webshot"
+      ],
+      "steps": [
+        {
+          "node": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+          "options": [
+            "Abstract",
+            "1. Introduction",
+            "2. Related Work",
+            "3. Dataset: ScreenParse",
+            "4. Method",
+            "5. Experiments",
+            "6. Conclusion",
+            "References",
+            "7. Appendix"
+          ],
+          "choice": "3. Dataset: ScreenParse",
+          "probabilities": {
+            "Abstract": 0.1873,
+            "1. Introduction": 0.067,
+            "2. Related Work": 0.092,
+            "3. Dataset: ScreenParse": 0.2015,
+            "4. Method": 0.1738,
+            "5. Experiments": 0.1116,
+            "6. Conclusion": 0.0646,
+            "References": 0.0327,
+            "7. Appendix": 0.0696
+          },
+          "confidence": 0.0624,
+          "answer_confidence": 0.2015,
+          "bucket": "6-10",
+          "temperature": 1.0000158548355103,
+          "latency_ms": 23.2
+        },
+        {
+          "node": "3. Dataset: ScreenParse",
+          "options": [
+            "3.1. Overview",
+            "3.2. Dataset Pipeline: Webshot"
+          ],
+          "choice": "3.2. Dataset Pipeline: Webshot",
+          "probabilities": {
+            "3.1. Overview": 0.4437,
+            "3.2. Dataset Pipeline: Webshot": 0.5563
+          },
+          "confidence": 0.0092,
+          "answer_confidence": 0.5563,
+          "bucket": "2",
+          "temperature": 1.9063563346862793,
+          "latency_ms": 25.4
+        }
+      ]
+    },
+    {
+      "question": "Which three defenses are used to verify the fused multi-shell decoder?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.2 Unfolding at load time"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "2 The Fused Multi-Shell Decoder",
+          "probabilities": {
+            "1 Introduction": 0.0029,
+            "2 The Fused Multi-Shell Decoder": 0.6079,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.3253,
+            "4 End-to-End Integration": 0.044,
+            "5 Evaluation": 0.0015,
+            "6 Limitations and Validity Envelope": 0.0068,
+            "7 Related Work": 0.007,
+            "8 Conclusion": 0.0013,
+            "9 Availability": 0.0006,
+            "Use of generative AI": 0.0001,
+            "References": 0.0004,
+            "A Statistical tests on the scale curve": 0.0005,
+            "B Protocol pre-registered criteria and provenance": 0.0017
+          },
+          "confidence": 0.6365,
+          "answer_confidence": 0.6079,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 28.0
+        },
+        {
+          "node": "2 The Fused Multi-Shell Decoder",
+          "options": [
+            "2.1 What a Λ24 index is",
+            "2.2 Unfolding at load time",
+            "2.3 The kernel",
+            "2.4 Verification"
+          ],
+          "choice": "2.2 Unfolding at load time",
+          "probabilities": {
+            "2.1 What a Λ24 index is": 0.1855,
+            "2.2 Unfolding at load time": 0.4579,
+            "2.3 The kernel": 0.1754,
+            "2.4 Verification": 0.1812
+          },
+          "confidence": 0.073,
+          "answer_confidence": 0.4579,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 27.3
+        }
+      ]
+    },
+    {
+      "question": "How is the gap between the kernel time and its DRAM floor attributed?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.2 Unfolding at load time"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "2 The Fused Multi-Shell Decoder",
+          "probabilities": {
+            "1 Introduction": 0.0043,
+            "2 The Fused Multi-Shell Decoder": 0.4917,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.3016,
+            "4 End-to-End Integration": 0.1188,
+            "5 Evaluation": 0.0111,
+            "6 Limitations and Validity Envelope": 0.0195,
+            "7 Related Work": 0.0376,
+            "8 Conclusion": 0.0046,
+            "9 Availability": 0.0006,
+            "Use of generative AI": 0.0004,
+            "References": 0.0012,
+            "A Statistical tests on the scale curve": 0.0012,
+            "B Protocol pre-registered criteria and provenance": 0.0072
+          },
+          "confidence": 0.4847,
+          "answer_confidence": 0.4917,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 27.7
+        },
+        {
+          "node": "2 The Fused Multi-Shell Decoder",
+          "options": [
+            "2.1 What a Λ24 index is",
+            "2.2 Unfolding at load time",
+            "2.3 The kernel",
+            "2.4 Verification"
+          ],
+          "choice": "2.2 Unfolding at load time",
+          "probabilities": {
+            "2.1 What a Λ24 index is": 0.2212,
+            "2.2 Unfolding at load time": 0.3156,
+            "2.3 The kernel": 0.2821,
+            "2.4 Verification": 0.1811
+          },
+          "confidence": 0.016,
+          "answer_confidence": 0.3156,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 26.3
+        }
+      ]
+    },
+    {
+      "question": "Where can the code and the quantized 4B model be downloaded?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "9 Availability"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "9 Availability",
+          "probabilities": {
+            "1 Introduction": 0.0025,
+            "2 The Fused Multi-Shell Decoder": 0.3042,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.0365,
+            "4 End-to-End Integration": 0.0238,
+            "5 Evaluation": 0.0007,
+            "6 Limitations and Validity Envelope": 0.0005,
+            "7 Related Work": 0.003,
+            "8 Conclusion": 0.0001,
+            "9 Availability": 0.6268,
+            "Use of generative AI": 0.0001,
+            "References": 0.0002,
+            "A Statistical tests on the scale curve": 0.0004,
+            "B Protocol pre-registered criteria and provenance": 0.0011
+          },
+          "confidence": 0.6411,
+          "answer_confidence": 0.6268,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 27.3
+        }
+      ]
+    },
+    {
+      "question": "How were the MMLU questions sampled, and how many per subject?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.2 Unfolding at load time"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "2 The Fused Multi-Shell Decoder",
+          "probabilities": {
+            "1 Introduction": 0.0159,
+            "2 The Fused Multi-Shell Decoder": 0.4334,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.2144,
+            "4 End-to-End Integration": 0.1232,
+            "5 Evaluation": 0.014,
+            "6 Limitations and Validity Envelope": 0.0097,
+            "7 Related Work": 0.1634,
+            "8 Conclusion": 0.008,
+            "9 Availability": 0.0005,
+            "Use of generative AI": 0.0004,
+            "References": 0.0022,
+            "A Statistical tests on the scale curve": 0.0023,
+            "B Protocol pre-registered criteria and provenance": 0.0126
+          },
+          "confidence": 0.3976,
+          "answer_confidence": 0.4334,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 28.9
+        },
+        {
+          "node": "2 The Fused Multi-Shell Decoder",
+          "options": [
+            "2.1 What a Λ24 index is",
+            "2.2 Unfolding at load time",
+            "2.3 The kernel",
+            "2.4 Verification"
+          ],
+          "choice": "2.2 Unfolding at load time",
+          "probabilities": {
+            "2.1 What a Λ24 index is": 0.1812,
+            "2.2 Unfolding at load time": 0.3657,
+            "2.3 The kernel": 0.3106,
+            "2.4 Verification": 0.1425
+          },
+          "confidence": 0.0491,
+          "answer_confidence": 0.3657,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 27.0
+        }
+      ]
+    },
+    {
+      "question": "How long does loading the 4B model take, unfolding included, compared with the f16 weights?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.2 Unfolding at load time"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "2 The Fused Multi-Shell Decoder",
+          "probabilities": {
+            "1 Introduction": 0.002,
+            "2 The Fused Multi-Shell Decoder": 0.4225,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.165,
+            "4 End-to-End Integration": 0.2553,
+            "5 Evaluation": 0.1356,
+            "6 Limitations and Validity Envelope": 0.0089,
+            "7 Related Work": 0.0058,
+            "8 Conclusion": 0.0003,
+            "9 Availability": 0.0004,
+            "Use of generative AI": 0.0001,
+            "References": 0.0011,
+            "A Statistical tests on the scale curve": 0.0008,
+            "B Protocol pre-registered criteria and provenance": 0.0022
+          },
+          "confidence": 0.4548,
+          "answer_confidence": 0.4225,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 28.8
+        },
+        {
+          "node": "2 The Fused Multi-Shell Decoder",
+          "options": [
+            "2.1 What a Λ24 index is",
+            "2.2 Unfolding at load time",
+            "2.3 The kernel",
+            "2.4 Verification"
+          ],
+          "choice": "2.2 Unfolding at load time",
+          "probabilities": {
+            "2.1 What a Λ24 index is": 0.2024,
+            "2.2 Unfolding at load time": 0.423,
+            "2.3 The kernel": 0.2499,
+            "2.4 Verification": 0.1247
+          },
+          "confidence": 0.067,
+          "answer_confidence": 0.423,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 29.6
+        }
+      ]
+    },
+    {
+      "question": "At what SM clock speeds did the L40S and the A100 run during the measurements?",
+      "path": [
+        "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+        "2 The Fused Multi-Shell Decoder",
+        "2.2 Unfolding at load time"
+      ],
+      "steps": [
+        {
+          "node": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+          "options": [
+            "1 Introduction",
+            "2 The Fused Multi-Shell Decoder",
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+            "4 End-to-End Integration",
+            "5 Evaluation",
+            "6 Limitations and Validity Envelope",
+            "7 Related Work",
+            "8 Conclusion",
+            "9 Availability",
+            "Use of generative AI",
+            "References",
+            "A Statistical tests on the scale curve",
+            "B Protocol pre-registered criteria and provenance"
+          ],
+          "choice": "2 The Fused Multi-Shell Decoder",
+          "probabilities": {
+            "1 Introduction": 0.0046,
+            "2 The Fused Multi-Shell Decoder": 0.4764,
+            "3 VRAM Layouts: the In-VRAM Rate as a Design Axis": 0.1303,
+            "4 End-to-End Integration": 0.3565,
+            "5 Evaluation": 0.0126,
+            "6 Limitations and Validity Envelope": 0.0039,
+            "7 Related Work": 0.0109,
+            "8 Conclusion": 0.0012,
+            "9 Availability": 0.0002,
+            "Use of generative AI": 0.0001,
+            "References": 0.001,
+            "A Statistical tests on the scale curve": 0.001,
+            "B Protocol pre-registered criteria and provenance": 0.0012
+          },
+          "confidence": 0.5438,
+          "answer_confidence": 0.4764,
+          "bucket": "11+",
+          "temperature": 0.5,
+          "latency_ms": 28.7
+        },
+        {
+          "node": "2 The Fused Multi-Shell Decoder",
+          "options": [
+            "2.1 What a Λ24 index is",
+            "2.2 Unfolding at load time",
+            "2.3 The kernel",
+            "2.4 Verification"
+          ],
+          "choice": "2.2 Unfolding at load time",
+          "probabilities": {
+            "2.1 What a Λ24 index is": 0.1868,
+            "2.2 Unfolding at load time": 0.3972,
+            "2.3 The kernel": 0.2713,
+            "2.4 Verification": 0.1447
+          },
+          "confidence": 0.0523,
+          "answer_confidence": 0.3972,
+          "bucket": "3-5",
+          "temperature": 1.7601518630981445,
+          "latency_ms": 26.7
+        }
+      ]
+    }
+  ]
+}

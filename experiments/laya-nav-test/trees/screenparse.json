@@ -1,0 +1,419 @@
+{
+  "doc": "screenparse",
+  "source": {
+    "studio_job": "a0fe56c9-77e0-475f-8830-b96d40aadfa3"
+  },
+  "hierarchy": "rebuilt from section numbering",
+  "docling_levels": [
+    "1"
+  ],
+  "title_fixes": {},
+  "root": {
+    "title": "Moving Beyond Sparse Grounding with Complete Screen Parsing Supervision",
+    "ref": "#/texts/1",
+    "page": 1,
+    "docling_level": 1,
+    "snippet": "A. Said Gurbuz 1 2 Sunghwan Hong ∗ 2 3 4 Ahmed Nassar 1 Marc Pollefeys 2 5 Peter Staar 1",
+    "children": [
+      {
+        "title": "Abstract",
+        "ref": "#/texts/3",
+        "page": 1,
+        "docling_level": 1,
+        "snippet": "Modern computer-use agents (CUA) must perceive a screen as a structured state, what elements are visible, where they are, and what text they contain, before they can reliably ground instructions and act. Yet, most available grounding datasets provide sparse supervision, with insufficient and low-diversity labels that annotate only a small subset of task-relevant elements per screen, which limits b",
+        "children": []
+      },
+      {
+        "title": "1. Introduction",
+        "ref": "#/texts/7",
+        "page": 1,
+        "docling_level": 1,
+        "snippet": "The rise of vision language models has opened a new era of computer use agents capable of interacting with graphical user interfaces (GUI) to perform complex tasks (Wang et al., 2025a; Qin et al., 2025; He et al., 2024; Zhang et al., 2025). Despite rapid progress, a fundamental bottleneck persists: the grounding problem (Cheng et al., 2024; Feizi et al., 2025). To operate effectively, a screen age",
+        "children": []
+      },
+      {
+        "title": "2. Related Work",
+        "ref": "#/texts/20",
+        "page": 2,
+        "docling_level": 1,
+        "snippet": "Computer-Use Agents and Evaluation. Recent benchmarks evaluate end-to-end agents that perceive screens and execute actions in web and OS environments, spanning interactive tasks and demonstration-based settings (Zhou et al., 2024; Koh et al., 2024; He et al., 2024; Xie et al., 2024; Deng et al., 2023). More recent suites (Wang et al., 2025b) further expand evaluation to structured, multi-platform ",
+        "children": []
+      },
+      {
+        "title": "3. Dataset: ScreenParse",
+        "ref": "#/texts/24",
+        "page": 2,
+        "docling_level": 1,
+        "snippet": "",
+        "children": [
+          {
+            "title": "3.1. Overview",
+            "ref": "#/texts/25",
+            "page": 2,
+            "docling_level": 1,
+            "snippet": "This section introduces ScreenParse , a web-scale dataset for complete screen parsing , the task of recovering all rendered visible UI elements on a screen together with their locations, semantic types, and text. Unlike most GUI agent and grounding datasets that provide sparse supervision for only the interacted or instruction-referred element(s) (Deng et al., 2023; Zhou et al., 2024; Rawles et al",
+            "children": []
+          },
+          {
+            "title": "3.2. Dataset Pipeline: Webshot",
+            "ref": "#/texts/83",
+            "page": 3,
+            "docling_level": 1,
+            "snippet": "ScreenParse is generated entirely by our automated Webshot pipeline, which renders diverse URLs, extracts DOMaligned candidates, and applies refinement and quality filtering to produce high-coverage dense annotations at scale without human intervention. An overview of the Webshot pipeline is visualized in Fig. 3. Web Crawling. To begin with, we collect a diverse set of web page screenshots by craw",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "4. Method",
+        "ref": "#/texts/213",
+        "page": 4,
+        "docling_level": 1,
+        "snippet": "",
+        "children": [
+          {
+            "title": "4.1. Problem Formulation",
+            "ref": "#/texts/214",
+            "page": 4,
+            "docling_level": 1,
+            "snippet": "Given a screenshot I ∈ R H × W × 3 , screen parsing aims to recover the full set of visible UI elements together with their geometry, semantic type, and text content. Concretely, we represent a screen as a set of elements S = { e i } N i =1 where each element e i = ( b i , c i , t i ) consists of a bounding box b i = ( x 1 , y 1 , x 2 , y 2 ) , a class label c i from a fixed UI taxonomy, and optio",
+            "children": []
+          },
+          {
+            "title": "4.2. ScreenTag: Compact Screen Structure Representation",
+            "ref": "#/texts/246",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "To train an autoregressive model for dense parsing, we serialize the screen into a compact xml-like structured sequence we call ScreenTag , inspired by OTSL (Lysak et al., 2023) and its successor DocTags (Nassar et al., 2025). Each element is emitted as a typed tag followed by discretized location tokens and optional text, and may include its serialized children: Coordinates are normalized and qua",
+            "children": []
+          },
+          {
+            "title": "4.3. Lightweight Vision-Language Model",
+            "ref": "#/texts/250",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "ScreenVLM. ScreenVLM is a compact vision-language model that converts a screenshot into a serialized, structured screen representation ( ScreenTag ; Fig. 4). Rather than introducing a heavy new architecture, we adapt a documentto-markup VLM, Granite Docling , which is based on the Idefics3 family (Laurenc ¸on et al., 2024) and closely related to SmolDocling (Nassar et al., 2025), to the UI domain.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "5. Experiments",
+        "ref": "#/texts/255",
+        "page": 5,
+        "docling_level": 1,
+        "snippet": "",
+        "children": [
+          {
+            "title": "5.1. Implementation details.",
+            "ref": "#/texts/256",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "We fine-tune ScreenVLM on the ScreenParse training split for 287,500 steps using 16 NVIDIA H100 GPUs (2 nodes × 8 GPUs) with an effective batch size of 64 . We use parameter-group learning rates: 2 . 12 × 10 -2 for the multimodal projection (MP) layers and 2 × 10 -3 for the vision and language backbones. Sequences are truncated or padded to a maximum length of 8192 tokens. Additional hyperparamete",
+            "children": []
+          },
+          {
+            "title": "5.2. Experimental Setting",
+            "ref": "#/texts/258",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "We evaluate three questions: (i) whether dense supervision enables accurate complete screen parsing in-domain, (ii) whether the resulting perception transfers to public out-of-distribution GUI benchmarks, and (iii) whether our structure-aware loss improves parsing accuracy and transfer. Datasets. We report results on: ScreenParse (in-domain dense parsing; 38.6K test screenshots), GroundCUA (Feizi ",
+            "children": []
+          },
+          {
+            "title": "5.3. Baselines",
+            "ref": "#/texts/265",
+            "page": 6,
+            "docling_level": 1,
+            "snippet": "We compare against two baseline families: (i) foundation VLMs for language-grounded structured extraction and (ii) detector-style UI parsers as strong, efficient localization backbones commonly used in agent pipelines. VLM baselines. We evaluate Qwen3-VL-2B-Instruct, Qwen3-VL-8B-Instruct (Bai et al., 2025), and InternVL32B (Zhu et al., 2025). For each dataset, we prompt models to extract all visib",
+            "children": []
+          },
+          {
+            "title": "5.4. Experimental Results",
+            "ref": "#/texts/271",
+            "page": 6,
+            "docling_level": 1,
+            "snippet": "We evaluate ScreenVLM and ScreenParse along three axes: (i) in-domain dense parsing on ScreenParse, (ii) out-ofdistribution transfer (GroundCUA and ScreenSpot), and (iii) ablation on our structure-aware loss. In-domain dense parsing on ScreenParse. Tab. 3 reports results on the ScreenParse test set. Among VLMs, ScreenVLM achieves the strongest dense parsing quality despite being substantially smal",
+            "children": []
+          },
+          {
+            "title": "5.5. Ablation Study and Analysis",
+            "ref": "#/texts/288",
+            "page": 8,
+            "docling_level": 1,
+            "snippet": "Ablation study on structure-aware loss improves robustness. To isolate the effect of our structure-aware objective, we train the same ScreenVLM architecture under identical settings with (i) standard cross-entropy and (ii) the structureaware weighted loss from Eq. 1, and compare on ScreenParse, GroundCUA, and ScreenSpot. Relative to standard cross-entropy, the structure-aware loss improves ScreenP",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "6. Conclusion",
+        "ref": "#/texts/292",
+        "page": 8,
+        "docling_level": 1,
+        "snippet": "We presented ScreenParse , a web-scale dataset for complete screen parsing with dense UI element annotations (boxes, 55-class types, and text) generated by our automated Webshot pipeline. Using ScreenParse, we trained ScreenVLM , a compact VLM that predicts a structured screen state, and introduced a structure-aware objective that emphasizes structure-critical tokens. Across in-domain evaluation o",
+        "children": []
+      },
+      {
+        "title": "References",
+        "ref": "#/texts/299",
+        "page": 9,
+        "docling_level": 1,
+        "snippet": "Apple. Human interface guidelines. https: //developer.apple.com/design/ human-interface-guidelines , 2026. Accessed: 2026-01-23. Bai, C., Zang, X., Xu, Y., Sunkara, S., Rastogi, A., Chen, J., and Ag¨ uera y Arcas, B. Uibert: Learning generic multimodal representations for ui understanding. In Zhou, Z.-H. (ed.), Proceedings of the Thirtieth International Joint Conference on Artificial Intelligence,",
+        "children": []
+      },
+      {
+        "title": "7. Appendix",
+        "ref": "#/texts/350",
+        "page": 12,
+        "docling_level": 1,
+        "snippet": "",
+        "children": [
+          {
+            "title": "7.1. Screen Parsing Label Set (ScreenTag)",
+            "ref": "#/texts/351",
+            "page": 12,
+            "docling_level": 1,
+            "snippet": "Tab. 8 lists the 55 semantic classes used for screen parsing in our ScreenTag annotation schema.",
+            "children": []
+          },
+          {
+            "title": "7.2. Training Details",
+            "ref": "#/texts/353",
+            "page": 12,
+            "docling_level": 1,
+            "snippet": "Qwen3-VL-2B-Instruct Finetuning. We fine-tune Qwen3-VL-2B-Instruct on ScreenParse with BF16 and DeepSpeed ZeRO-3 offload, updating only the multimodal LLM (vision tower and projector frozen). We use batch size 1 with gradient accumulation 4, using AdamW optimizer with cosine schedule (3% warmup), learning rate 2 × 10 -5 , weight decay 0.01, max sequence length 8192, and train for 5 epochs. InternV",
+            "children": []
+          },
+          {
+            "title": "7.3. Evaluation Metrics",
+            "ref": "#/texts/455",
+            "page": 13,
+            "docling_level": 1,
+            "snippet": "We use the indicator function 1 [ · ] , defined as 1 [ s ] = 1 if statement s is true and 0 otherwise. Let G be the set of ground-truth boxes and P the set of predicted boxes for an image with pixel domain Ω . PageIoU. We define occupancy masks over pixels: PageIoU measures layout-level overlap between the unions of boxes: Label PageIoU. Let c ( g ) and c ( b ) be class labels. We build pixel-wise",
+            "children": []
+          },
+          {
+            "title": "7.4. Additional Results",
+            "ref": "#/texts/475",
+            "page": 14,
+            "docling_level": 1,
+            "snippet": "This section includes supplementary tables and ablations referenced in the main paper.",
+            "children": []
+          },
+          {
+            "title": "7.5. Qualitative Results",
+            "ref": "#/texts/480",
+            "page": 15,
+            "docling_level": 1,
+            "snippet": "",
+            "children": [
+              {
+                "title": "Ground Truth",
+                "ref": "#/texts/503",
+                "page": 16,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "OmniParser v2",
+                "ref": "#/texts/504",
+                "page": 16,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "YOLO (Ours)",
+                "ref": "#/texts/505",
+                "page": 16,
+                "docling_level": 1,
+                "snippet": "Critical Alerts, Banners, Sounds, Badges",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "Ground Truth",
+                "ref": "#/texts/651",
+                "page": 19,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "OmniParser v2",
+                "ref": "#/texts/652",
+                "page": 19,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "OmniParser v2 + ScreenParse",
+                "ref": "#/texts/653",
+                "page": 19,
+                "docling_level": 1,
+                "snippet": "Notification Center shows your alerts in the upper-right of your screen, without interrupting what Notification Center shows youralerts in the upper-right of your screen, without interrupting what NotifidationCenter showsyouralertsinthepper-right of yourcreenwithoutinteruptingwha you're doing. Show and hide Notification Center by clicking the clock in the menu bar. you're doing. Show and hide Noti",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              }
+            ]
+          },
+          {
+            "title": "7.6. Webshot Pipeline Specifications",
+            "ref": "#/texts/1206",
+            "page": 22,
+            "docling_level": 1,
+            "snippet": "",
+            "children": [
+              {
+                "title": "7.6.1. RENDERING AND SCREENSHOT STANDARDIZATION",
+                "ref": "#/texts/1207",
+                "page": 22,
+                "docling_level": 1,
+                "snippet": "Controlled rendering setup. All pages are rendered in a standardized browser environment (Chromium via Playwright) with viewport size of 1440 width and 900 height. We disabled CSS animations/transitions to avoid transient states and inconsistent layouts across runs. We use a bounded navigation timeout of 30s and allow a short post-load settling period ( 800ms ) before extracting annotations. Viewp",
+                "children": []
+              },
+              {
+                "title": "7.6.2. DENSE UI ELEMENT EXTRACTION WITH DOM HIERARCHY",
+                "ref": "#/texts/1210",
+                "page": 22,
+                "docling_level": 1,
+                "snippet": "Element set and geometry. For each rendered page, we extract a set of UI elements by traversing the DOM and keeping elements that are inside the viewport. For each retained element we record: (i) its bounding box in pixel coordinates, (ii) a coarse element type inferred from HTML/ARIA cues (used as a fallback label prior to refinement), and (iii) its textual content (from on-page text, with option",
+                "children": []
+              },
+              {
+                "title": "7.6.3. TEXT EXTRACTION AND OCR",
+                "ref": "#/texts/1214",
+                "page": 22,
+                "docling_level": 1,
+                "snippet": "Fine-grained text boxes. In addition to per-element text, we optionally extract fine-grained text spans by collecting bounding rectangles of rendered text. This supports richer supervision and analysis (e.g., separating layout regions from text density). OCR fallback (optional). When enabled and available, we run OCR (Tesseract) over element crops to fill missing or unreliable text for elements wh",
+                "children": []
+              },
+              {
+                "title": "7.6.4. FILTERING AND SAMPLE VALIDATION",
+                "ref": "#/texts/1217",
+                "page": 22,
+                "docling_level": 1,
+                "snippet": "Raw DOM extraction is intentionally dense and contains noise (layout wrappers, invisible artifacts, redundant overlapping boxes). We apply conservative filters designed to improve label quality while retaining semantically important UI. Geometric and visibility filtering. We remove elements that are clearly unsuitable training targets, including: (i) invalid boxes (non-positive width/height), (ii)",
+                "children": []
+              },
+              {
+                "title": "7.6.5. SCREENTAG SERIALIZATION",
+                "ref": "#/texts/1223",
+                "page": 23,
+                "docling_level": 1,
+                "snippet": "We represent each screen in a compact structure we called ( ScreenTag ) to serve as an efficient dense parsing target. Each element is serialized as a typed tag with discretized location tokens: where coordinates are given in left, top, right, bottom order and normalized to a grid of 0-500 . We traverse the hierarchy depth-first and order siblings by top-left position to encourage stable reading o",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "7.7. VLM-as-a-Judge Prompt for Annotation Quality Filtering",
+            "ref": "#/texts/1230",
+            "page": 23,
+            "docling_level": 1,
+            "snippet": "In the Webshot pipeline, we use qwen3-VL-8B-instruct as a VLM-as-a-judge to score screen annotations and filter lowquality pages in ScreenParse. The threshold chosen is 0 . 70 to filter bad samples. The system and user prompts are provided below:",
+            "children": [
+              {
+                "title": "VLM-as-a-Judge Prompt (Qwen3-VL-8B-Instruct)",
+                "ref": "#/texts/1232",
+                "page": 23,
+                "docling_level": 1,
+                "snippet": "_QUALITY_SYSTEM_PROMPT = '''You are a rigorous judge of UI bounding-box annotations. You will be given: -ONE image: a screenshot of a user interface with bounding boxes and text labels drawn on top of it. Each box corresponds to a single annotated UI element. -The labels near the boxes show the element class (for example: Text, Button, Link, Image, Navigation Bar, etc.). Your task is to evaluate *",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "2) FALSE POSITIVES / SPURIOUS BOXES (0-100)",
+                "ref": "#/texts/1246",
+                "page": 24,
+                "docling_level": 1,
+                "snippet": "Penalize boxes that are not aligned with any visible UI element, such as: -Boxes in completely blank areas. -Boxes that repeat the same position but shifted somewhere else on the screen where nothing exists. -Boxes over pure background images or whitespace where there is no clear object or control. -Do NOT treat \"container + child\" as false positive if the container corresponds to a real region (e",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "4) LOCALIZATION / ALIGNMENT (0-100)",
+                "ref": "#/texts/1271",
+                "page": 24,
+                "docling_level": 1,
+                "snippet": "-Evaluate how well each bounding box fits its intended UI element. -The box tightly covers the element, with small margins. -It does not cut off major parts of the element.",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              }
+            ]
+          },
+          {
+            "title": "7.8. VLM Prompt for Class Refinement",
+            "ref": "#/texts/1283",
+            "page": 26,
+            "docling_level": 1,
+            "snippet": "We refine each element into the ScreenTag label set with a VLM that sees the entire page screenshot, the element crop, and a compact HTML/ARIA snippet. The following prompts map each element to a single class and an interactability flag.",
+            "children": [
+              {
+                "title": "System prompt.",
+                "ref": "#/texts/1285",
+                "page": 26,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "Class Refinement System Prompt",
+                "ref": "#/texts/1286",
+                "page": 26,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "User prompt template.",
+                "ref": "#/texts/1288",
+                "page": 26,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              },
+              {
+                "title": "Class Refinement User Prompt Template (55-class ScreenTag)",
+                "ref": "#/texts/1289",
+                "page": 26,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              }
+            ]
+          },
+          {
+            "title": "7.9. VLM Inference Prompts for Evaluation",
+            "ref": "#/texts/1296",
+            "page": 28,
+            "docling_level": 1,
+            "snippet": "For prompting-based baselines, we ask the model to extract all visible UI elements and return a JSON list with normalized bounding boxes, labels, and visible text. We use dataset-specific label sets: the 55-class ScreenTag taxonomy for ScreenParse (Tab. 8), the 8-class GroundCUA schema, and the 2-class ScreenSpot schema.",
+            "children": [
+              {
+                "title": "Qwen3-VL and InternVL3 Inference Prompt",
+                "ref": "#/texts/1298",
+                "page": 28,
+                "docling_level": 1,
+                "snippet": "",
+                "children": [],
+                "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

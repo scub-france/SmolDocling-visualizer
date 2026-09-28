@@ -1,0 +1,216 @@
+{
+  "doc": "unfolding",
+  "source": {
+    "docling_json": "output/unfolding.docling.json"
+  },
+  "hierarchy": "rebuilt from section numbering",
+  "docling_levels": [
+    "1"
+  ],
+  "title_fixes": {
+    "1. Introduction": "1 Introduction",
+    "2.1 Whata 44 index is": "2.1 What a Λ24 index is",
+    "2.3. The kernel": "2.3 The kernel",
+    "3.1. Protocol": "3.1 Protocol",
+    "3.3. Where deployed 4-bit and 2-bit kernels sit": "3.3 Where deployed 4-bit and 2-bit kernels sit",
+    "3.5 Asecond memory hierarchy": "3.5 A second memory hierarchy",
+    "Use of generative Al": "Use of generative AI",
+    "B_ Protocol pre-registered criteria and provenance": "B Protocol pre-registered criteria and provenance"
+  },
+  "root": {
+    "title": "Unfolding the Leech Lattice: Fused Multi-Shell Decoding and VRAM Layouts for 2-Bit LLM Weights",
+    "ref": "#/texts/1",
+    "page": 1,
+    "docling_level": 1,
+    "snippet": "What a combinatorial index costs to serve, measured against deployed 4-bit and 2-bit GEMV kernels",
+    "children": [
+      {
+        "title": "PIER-JEAN MALANDRINO, Scub, France",
+        "ref": "#/texts/3",
+        "page": 1,
+        "docling_level": 1,
+        "snippet": "Leech-lattice vector quantization holds the strongest reported 2-bit quality under its own evaluation protocol. Its kernel decodes one shell; we found no implementation of the multi-shell decoder the rate requires. This paper supplies one and measures its serving cost for decode-phase GEMV at batch 1. First, a serving path for the full 301-class codebook: an offline expansion into GPU layouts and ",
+        "children": [],
+        "excluded": "unnumbered header inside a numbered section (figure label, prompt box, author line)"
+      },
+      {
+        "title": "1 Introduction",
+        "ref": "#/texts/7",
+        "page": 1,
+        "docling_level": 1,
+        "snippet": "The number of bits per weight is the only rate that changes the class of model a given machine can load. At 16 bits a 70B-parameter model needs 140 GB of weights; at 2 bits the same model occupies about 20 GB on disk and fits in the memory of a workstation. That figure is the on-disk rate. The rate served from VRAM is higher, because the kernel reads a format it can decode inside a matvec, and tha",
+        "children": []
+      },
+      {
+        "title": "2 The Fused Multi-Shell Decoder",
+        "ref": "#/texts/20",
+        "page": 2,
+        "docling_level": 1,
+        "snippet": "",
+        "children": [
+          {
+            "title": "2.1 What a Λ24 index is",
+            "ref": "#/texts/21",
+            "page": 2,
+            "docling_level": 1,
+            "snippet": "LLVQ quantizes weights in blocks of 24. Each block is normalized and its direction is snapped to the nearest point of the Leech lattice 24 inside the ball 24(12) (squared norm < 2 -12 in the standard scaling). The ball holds N 111 043 117 458 000 points, so a direction index costs [log, N] 47 bits; one gain bit selects one of two per-tensor magnitude centroids. A block costs 48 bits, a code rate o",
+            "children": []
+          },
+          {
+            "title": "2.2 Unfolding at load time",
+            "ref": "#/texts/169",
+            "page": 3,
+            "docling_level": 1,
+            "snippet": "The encoder (nearest-neighbor search over 1.1 x 10'4 points) runs offline, once per model, and may cost hours; the decoder runs inside every matvec. At the 2-bit rate the codebook spans eleven shells and 301 classes, and a per-class branch would diverge across every warp. The original paper's kernel decodes a single shell (m 3). Our design choice is that the 47-bit index is never decoded in the ma",
+            "children": []
+          },
+          {
+            "title": "2.3 The kernel",
+            "ref": "#/texts/172",
+            "page": 3,
+            "docling_level": 1,
+            "snippet": "Figure 2 (left) follows one warp through the PLANEs14 kernel. One warp computes one output row; a 256-thread CTA holds 8 rows and the grid holds doy:/8 CTAs. A separate kernel rotates the activation first, a Walsh-Hadamard transform in the shared memory of a single block (the bound of §6). The matvec stages x in shared memory by tiles of 128 blocks (12 288 bytes), two barriers per tile; within a t",
+            "children": []
+          },
+          {
+            "title": "2.4 Verification",
+            "ref": "#/texts/415",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "Lattice decoders fail silently: a wrong sign convention or a swapped enumeration order yields plausible weights and a ruined model. Three defenses: e Bit-exact transcoding. The transcoder from format v1 to the four byte formats of §3 is verified bit-exact on all 150 681 600 blocks of the artifact, its tests hardened by mutation testing (~25 mutants killed). e Every row against £64 before any timin",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "3 VRAM Layouts: the In-VRAM Rate as a Design Axis",
+        "ref": "#/texts/420",
+        "page": 5,
+        "docling_level": 1,
+        "snippet": "The rate that decides which models fit on a GPU is the rate of the format the kernel reads. It is a different quantity from the on-disk rate (2.07 b/weight effective, §5). This section maps it on one card: four byte formats of ours read by five decoders, a deployed 4-bit and a deployed 2-bit kernel, FP16 and cuBLAS controls, and a control kernel that reads no weights. The ten arms share one proces",
+        "children": [
+          {
+            "title": "3.1 Protocol",
+            "ref": "#/texts/422",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "All arms run in one process on one NVIDIA L40S: one token through the 252 projections of Qwen34B (decode-phase GEMYV, batch 1). The ten arms are interleaved in a fixed dispatch order over 7 rounds, the first 2 discarded. Every speedup is the median of per-round ratios against the FP16 control, with its min-max range. Every output row of every arm is verified against f64 before any timing (§2). Byt",
+            "children": []
+          },
+          {
+            "title": "3.2 The layout scale",
+            "ref": "#/texts/424",
+            "page": 5,
+            "docling_level": 1,
+            "snippet": "Table 1 carries the ten arms, and Figure 3 plots them against the byte bound, the speedup 16/b that an arm at rate b would reach at the control's bandwidth. Its of bound column, achieved bandwidth as a fraction of the control's, is the quantity that compares across rates. SLOT32 stores decoded fields at fixed offsets in a byte-aligned record of 9 + 1 + 24L bits: class identifier, gain bit, 24-bit ",
+            "children": []
+          },
+          {
+            "title": "3.3 Where deployed 4-bit and 2-bit kernels sit",
+            "ref": "#/texts/563",
+            "page": 7,
+            "docling_level": 1,
+            "snippet": "The 4-bit arm is the AWQ w4g128 GEMV kernel [16], ported unchanged into the harness with its own grid and its own binary16 output, and timed in the same rounds as ours. Its payload is synthesized from our weights requantized to w4g128: sound for timing, since the kernel has no data-dependent branch, and silent on quality. It reads 4.179 b/weight, less than three of our four formats, so its 3.38x a",
+            "children": []
+          },
+          {
+            "title": "3.4 Attribution to the DRAM floor",
+            "ref": "#/texts/572",
+            "page": 8,
+            "docling_level": 1,
+            "snippet": "The instrumented job carries its own FP16 control, 7.27 GB at 662 GB/s (a rounding step from Table 1's 661; floor and time come from one process). At that bandwidth the 2.50 GB that SLor32 reads put its DRAM floor at 3.78 ms, while the instrumented arm takes 5.82 ms. The 2.04 ms gap belongs to the kernel. Three control kernels, each adding one stage, and one occupancy experiment attribute it (Figu",
+            "children": []
+          },
+          {
+            "title": "3.5 A second memory hierarchy",
+            "ref": "#/texts/769",
+            "page": 9,
+            "docling_level": 1,
+            "snippet": "A byte saved becomes time saved only while the kernel is bandwidth-bound, so the scale of §3.2 is a statement about a pair, format and memory hierarchy. Nine of the arms were re-run from the same binary and artifact on an NVIDIA A100 (HBM2e, sm_8Q) against the L40S of Table 1 (GDDR6, sm_89); the 2-bit competitor has no A100 point. Kernels are compiled for the target at startup, nothing in their te",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "4 End-to-End Integration",
+        "ref": "#/texts/776",
+        "page": 10,
+        "docling_level": 1,
+        "snippet": "Setup. The served path is a decode-phase GEMV at batch size 1:a prompt of tokens is processed as matrix-vector products (no prefill GEMM), the activation rotation runs on CUDA only, and VRAM figures count weights only (§6). Decoding is greedy on a single L40S, on Qwen3-4B unless another size is named. The fused PLANEs14 kernel replaces the 252 linear projections of candle 0.9.2 [13], a Rust infere",
+        "children": []
+      },
+      {
+        "title": "5 Evaluation",
+        "ref": "#/texts/784",
+        "page": 11,
+        "docling_level": 1,
+        "snippet": "Protocol. All quality numbers come from one harness on one machine (NVIDIA L408), f16 on both sides, with token-level fingerprints required to match across arms. Perplexity is scored on WikiText-2 test [19] at context 4096 over its first 12 non-overlapping windows, 49 140 scored tokens. The 12 windows are a prefix of the test split. MMLU [12] uses 2 280 questions, 40 per subject from a fixed seed,",
+        "children": []
+      },
+      {
+        "title": "6 Limitations and Validity Envelope",
+        "ref": "#/texts/923",
+        "page": 14,
+        "docling_level": 1,
+        "snippet": "The validity envelope. Table 8 states where the measurements hold and where they stop. Two rows deserve a word: quality is scored through the dense path, the served path's equivalence resting on the bit-exact transcoding and row-level f64 checks of §2; and load-time unfolding is absorbed into a load that stays shorter than the dense arm's: 122-131 s for the fused 4B, unfolding included, against 18",
+        "children": []
+      },
+      {
+        "title": "7 Related Work",
+        "ref": "#/texts/933",
+        "page": 15,
+        "docling_level": 1,
+        "snippet": "Extreme low-bit weight quantization. GPTQ [8] established the error-propagating framework most post-training methods refine. At 2 bits, vector and trellis codes replaced scalar grids: QuIP [3] introduced incoherence processing, QuIP [25] added E8-lattice codebooks, and QTIP [26] reached the previous state of the art with trellis codes. LLVQ [29] improved on QTIP's quality with a spherical GPTQ var",
+        "children": []
+      },
+      {
+        "title": "8 Conclusion",
+        "ref": "#/texts/942",
+        "page": 16,
+        "docling_level": 1,
+        "snippet": "We wrote a fused dequantize-plus-matvec kernel for the full 301-class 24(12) codebook, to our knowledge the first: divergence-free, verified against f64, 65% of its byte bound on an L40S. The in-VRAM rate is a distinct design axis: four bit-exact layouts span 5.51 to 3.59 b/weight, and bi planes beat one-hot masks on size and speed at constant bandwidth. The curve turns between 4.8 and 4.3 b/weigh",
+        "children": []
+      },
+      {
+        "title": "9 Availability",
+        "ref": "#/texts/947",
+        "page": 17,
+        "docling_level": 1,
+        "snippet": "Code, the CSVs behind every table and figure, and the paper source are at https://github.com/pjm alandrino/Ilvq (MIT or Apache-2.0); make in paper/ rejects a table that drifts from its CSV. The measurement campaign cost under $100 of rented GPU time in total; per-job amounts, dates and logs are in the repository. The 2-bit competitor's kernel is GPL v3: the benchmark fetches it at a pinned commit ",
+        "children": []
+      },
+      {
+        "title": "Use of generative AI",
+        "ref": "#/texts/953",
+        "page": 17,
+        "docling_level": 1,
+        "snippet": "Disclosed under ACM's Policy on Authorship. Anthropic's Claude, through the Claude Code CLI in 2026, drafted and revised this manuscript's text, wrote the figure-generating and table-checking scripts, wrote portions of the CUDA kernels, Rust host code and tests, and recomputed statistics from the committed measurement journals. The author designed the study, authorized every measurement, verified ",
+        "children": []
+      },
+      {
+        "title": "References",
+        "ref": "#/texts/955",
+        "page": 17,
+        "docling_level": 1,
+        "snippet": "1] Jean-Pierre Adoul and Michel Barth. 1988. Nearest neighbor algorithm for spherical codes from the Leech lattice. IEEE Transactions on Information Theory 34, 5 (1988), 1188-1202. 2] Saleh Ashkboos, Amirkeivan Mohtashami, Maximilian L. Croci, Bo Li, Pashmina Cameron, Martin Jaggi, Dan Alistarh, Torsten Hoefler, and James Hensman. 2024. QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs. In Adva",
+        "children": []
+      },
+      {
+        "title": "A Statistical tests on the scale curve",
+        "ref": "#/texts/989",
+        "page": 19,
+        "docling_level": 1,
+        "snippet": "This appendix carries the tests behind §5. Perplexity intervals are paired Student t intervals on the mean per-window NLL difference (12 windows, 11 d.f.), exponentiated; the shared fingerprint makes window i the same text at every size, so steps and the knee form window by window on the log ratio. MMLU deltas are subject-stratified paired bootstraps (10 000 draws) with exact McNemar over the same",
+        "children": []
+      },
+      {
+        "title": "B Protocol pre-registered criteria and provenance",
+        "ref": "#/texts/995",
+        "page": 19,
+        "docling_level": 1,
+        "snippet": "Layout benchmark protocol. The ten arms of Table 1 run in one process on one L40S, interleaved each round in fixed dispatch order, seven rounds with two discarded. Speedups are medians of per-round ratios against the FP16 control, with ranges. Two phases (nine arms, then the same nine plus the 2-bit competitor) move the nine common ratios by at most 0.36%. Incumbents reproduce across jobs (Planes1",
+        "children": []
+      }
+    ]
+  }
+}
