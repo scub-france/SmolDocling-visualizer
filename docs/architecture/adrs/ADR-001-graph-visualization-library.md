@@ -7,7 +7,7 @@
 ## Context
 
 v0.5.0 introduces Neo4j as a graph-native storage layer for parsed documents
-(see [docs/design/neo4j-integration.md](../../design/neo4j-integration.md)
+(see [docs/design/neo4j-integration.md](https://github.com/scub-france/Docling-Studio/blob/main/docs/design/neo4j-integration.md)
 and [#186](https://github.com/scub-france/Docling-Studio/issues/186)). We need
 an in-app visualization of that graph: the `DoclingDocument` tree as rendered
 in Neo4j, with nodes colored by element type (`SectionHeader`, `Paragraph`,
@@ -134,7 +134,7 @@ Use **Cytoscape.js** via a thin Vue wrapper (`vue-cytoscape` or a bespoke
 
 ## References
 
-- [Neo4j integration design doc](../../design/neo4j-integration.md) §8.3
+- [Neo4j integration design doc](https://github.com/scub-france/Docling-Studio/blob/main/docs/design/neo4j-integration.md) §8.3
 - [Issue #186 — Neo4j integration](https://github.com/scub-france/Docling-Studio/issues/186)
 - [Cytoscape.js](https://js.cytoscape.org/)
 - [cytoscape-dagre](https://github.com/cytoscape/cytoscape.js-dagre)

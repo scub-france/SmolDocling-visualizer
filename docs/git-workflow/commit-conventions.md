@@ -1,73 +1,64 @@
-# Commit Conventions
+# Commit conventions
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/) to keep the git history readable and to enable automated changelog generation.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), so the history is easy to scan. The changelog is written by hand, not generated from them (see [Changelog](#changelog)).
 
 ## Format
 
-```
+```text
 <type>(<scope>): <description>
 
-[optional body]
+[body]
 
-[optional footer(s)]
+[footer]
 ```
 
 ## Types
 
-| Type | When to use | Example |
-|------|-------------|---------|
-| `feat` | New feature | `feat(chunking): add hierarchical chunker support` |
-| `fix` | Bug fix | `fix(upload): handle empty PDF gracefully` |
-| `docs` | Documentation only | `docs: update architecture diagram` |
-| `style` | Formatting, no logic change | `style(api): fix ruff formatting warnings` |
-| `refactor` | Code restructuring, no behavior change | `refactor(persistence): extract repository base class` |
-| `test` | Adding or updating tests | `test(analysis): add rechunk edge case tests` |
-| `chore` | Tooling, CI, dependencies | `chore: bump docling to 2.31` |
-| `perf` | Performance improvement | `perf(bbox): batch coordinate normalization` |
-| `ci` | CI/CD pipeline changes | `ci: add multi-arch Docker build` |
+| Type | Use it for | Example |
+|------|------------|---------|
+| `feat` | A new feature | `feat(bbox): clear the Parse view focus with a show-all button` |
+| `fix` | A bug fix | `fix(frontend): make the dev route badge readable in both themes` |
+| `docs` | Documentation only | `docs(design): accept the runtime reasoning config design` |
+| `style` | Formatting only | `style: collapse the analysis guard in chunk_service to ruff's formatting` |
+| `refactor` | A code change that keeps the behavior | `refactor(api): centralize app state dependencies` |
+| `perf` | Faster, same behavior | `perf(analysis): load a saved analysis's tree once` |
+| `test` | Tests only | `test(frontend): cover the dev route badge label` |
+| `build` | Docker images, dependencies, build tooling | `build(deps): bound python-multipart upper version` |
+| `ci` | GitHub Actions workflows | `ci(docling-compat): fix version-capture quoting in canary` |
+| `chore` | Anything else, such as releases | `chore(release): freeze [0.7.2]` |
 
-## Scopes (optional)
+## Scopes
 
-Use the feature or component name:
+The scope is optional. Name the area you changed. Scopes already in use:
 
-| Scope | Maps to |
-|-------|---------|
-| `api` | `document-parser/api/` |
-| `domain` | `document-parser/domain/` |
-| `persistence` | `document-parser/persistence/` |
-| `infra` | `document-parser/infra/` |
-| `upload` | Upload feature (front + back) |
-| `analysis` | Analysis feature (front + back) |
-| `chunking` | Chunking feature (front + back) |
-| `bbox` | Bounding box pipeline |
-| `e2e` | `e2e/` tests |
-| `docker` | Dockerfile, docker-compose |
-| `ci` | `.github/workflows/` |
+| Area | Scopes |
+|------|--------|
+| Frontend | `frontend` |
+| Backend layers | `api`, `domain`, `infra` |
+| Features | `analysis`, `parse`, `chunking`, `reasoning`, `export`, `settings`, `stores`, `neo4j`, `bbox` |
+| Tests | `tests`, `e2e`, `e2e-ui` |
+| Build and delivery | `ci`, `docker`, `nginx`, `deps`, `security`, `release` |
+| Docs | `design`, `audit`, `changelog` |
 
 ## Rules
 
-1. **Subject line** — imperative mood, lowercase, no period, max 72 characters
-2. **Body** — explain *why*, not *what* (the diff shows what)
-3. **Breaking changes** — add `BREAKING CHANGE:` in the footer or `!` after the type: `feat(api)!: rename /analyses to /jobs`
-4. **Issue references** — use `Closes #123` or `Fixes #456` in the footer
+1. Write the description in the imperative, in lowercase, with no final period. Keep the whole first line to 72 characters at most.
+2. Use the body to explain why. The diff already shows what.
+3. Mark a breaking change with `!` after the type or scope (`feat(api)!: rename /analyses to /jobs`), or with a `BREAKING CHANGE:` footer.
+4. Reference the issue with `(#142)` at the end of the first line, or with `Closes #142` in the footer. Only `Closes #142` (or `Fixes #142`) closes the issue, once the commit reaches a `release/*` branch (`auto-close-issues.yml`).
 
-## Examples
+## Example
 
+```text
+fix(upload): reject empty PDFs
+
+Empty files were accepted and failed later, during conversion,
+with no clear message. Rejecting them at upload tells the user
+right away.
+
+Closes #142
 ```
-feat(chunking): add page filtering in Prepare mode
 
-Users can now select which pages to include in chunking.
-The filter is persisted in the analysis job metadata.
+## Changelog
 
-Closes #87
-```
-
-```
-fix(upload): reject files exceeding MAX_FILE_SIZE_MB
-
-Previously, oversized files were accepted and failed silently
-during Docling conversion. Now the API returns 413 with a
-clear error message.
-
-Fixes #102
-```
+`CHANGELOG.md` is written by hand and follows [Keep a Changelog](https://keepachangelog.com/). Add a line under `[Unreleased]` for each user-visible change. At release time, a `chore(release): freeze [X.Y.Z]` commit turns `[Unreleased]` into the new version's section.

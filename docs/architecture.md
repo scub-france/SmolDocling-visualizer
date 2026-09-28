@@ -1,220 +1,135 @@
 # Architecture
 
-## Overview
+## The big picture
 
-![Docling Studio architecture](images/global.png){ width="700" }
+```mermaid
+flowchart TB
+    subgraph Studio ["Docling Studio"]
+        Front("Frontend<br/>Vue 3, served by nginx") -->|/api| Back("Backend<br/>FastAPI")
+        Back --> DB[("SQLite<br/>+ uploaded PDFs")]
+        Back --> Docling("Docling<br/>in the backend")
+    end
+    Browser(["Browser"]) --> Front
+    Back -.-> Serve("Docling Serve<br/>remote engine")
+    Back -.-> Ollama("Ollama<br/>for Ask")
+    Back -.-> Stores[("OpenSearch, Neo4j<br/>ingestion, deprecated")]
 
-Two services communicating via REST. The frontend is a Vue 3 SPA served by Nginx in production. The backend is a FastAPI app that wraps Docling's document conversion engine.
-
-### Zooming into the backend
-
-The schema above shows the macro view. Inside the backend, the code follows a **Hexagonal Architecture** (ports & adapters) with strict layer boundaries:
-
-```
-┌──────────────────────────────────────────────────────┐
-│                     Backend                           │
-│                                                      │
-│   ┌──────────┐                                       │
-│   │   api/   │  ← HTTP (FastAPI routes, Pydantic)    │
-│   └────┬─────┘                                       │
-│        │ calls                                       │
-│   ┌────▼─────┐                                       │
-│   │services/ │  ← Use case orchestration             │
-│   └──┬────┬──┘                                       │
-│      │    │                                          │
-│  ┌───▼──┐ ┌▼───────────┐                             │
-│  │domain│ │persistence/ │                             │
-│  │      │ │             │                             │
-│  │bbox  │ │ SQLite CRUD │  ← Storage (your blue box) │
-│  │parse │ │ file store  │                             │
-│  └──────┘ └─────────────┘                             │
-│  ↑ pure Python, no deps   ↑ aiosqlite               │
-└──────────────────────────────────────────────────────┘
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    classDef deprecated fill:#9E9E9E0D,stroke:#9E9E9E,stroke-width:1.5px,stroke-dasharray:5 4,color:#9E9E9E
+    class Browser grey
+    class Front,Back orange
+    class Docling,Serve,Ollama blue
+    class DB teal
+    class Stores deprecated
+    style Studio fill:#FF57220A,stroke:#FF572266,stroke-width:1px,stroke-dasharray:4 4
 ```
 
-Dependencies flow **inward**: `api → services → domain`. The domain layer has zero knowledge of HTTP or database.
+Dotted lines are optional. Grey and dashed means deprecated: ingestion (OpenSearch, Neo4j) goes away in 0.8.0. The published image puts nginx and the backend in one container (root `Dockerfile`). Docker Compose runs them as two containers.
 
-## Backend — Hexagonal Architecture (ports & adapters)
+| Folder | Content |
+|--------|---------|
+| `frontend/` | The web app: Vue 3, TypeScript, Vite, Pinia |
+| `document-parser/` | The backend: FastAPI, Docling, SQLite |
+| `embedding-service/` | Turns text into vectors, for ingestion only. Deprecated, removed in 0.8.0 |
+| `e2e/` | End-to-end tests: Karate for the API, Karate UI in Chrome |
+| `docs/` | This documentation, design docs, audit checklists |
+| `experiments/`, `scripts/` | Research scripts and the demo recorder, not part of the app |
 
-The backend follows the hexagonal / ports-and-adapters pattern. The domain layer defines **ports** (abstract protocols in `domain/ports.py`); `infra/` provides **adapters** that implement them. Dependencies flow inward: API → Services → Domain. The domain layer has zero knowledge of HTTP, database, or any framework.
+## Backend
 
-```
-document-parser/
-├── main.py                   # FastAPI app, CORS, lifespan, health endpoint
-│
-├── domain/                   # Pure domain — no HTTP, no DB
-│   ├── models.py             # Document, AnalysisJob dataclasses
-│   ├── ports.py              # Abstract protocols (DocumentConverter, DocumentChunker)
-│   ├── value_objects.py      # ConversionResult, ChunkingOptions, ChunkResult
-│   └── bbox.py               # Bounding box coordinate normalization
-│
-├── api/                      # HTTP layer (FastAPI routers)
-│   ├── schemas.py            # Pydantic DTOs (camelCase serialization)
-│   ├── documents.py          # /api/documents endpoints
-│   └── analyses.py           # /api/analyses endpoints (create, rechunk, delete)
-│
-├── persistence/              # Data layer (SQLite via aiosqlite)
-│   ├── database.py           # Connection management, schema init
-│   ├── document_repo.py      # Document CRUD
-│   └── analysis_repo.py      # AnalysisJob CRUD
-│
-├── infra/                    # Infrastructure adapters
-│   ├── settings.py           # Environment-based configuration
-│   ├── local_converter.py    # In-process Docling converter (local mode)
-│   ├── serve_converter.py    # HTTP client for Docling Serve (remote mode)
-│   ├── local_chunker.py      # In-process chunking (HierarchicalChunker, HybridChunker)
-│   ├── rate_limiter.py       # Sliding-window rate limiting middleware
-│   └── bbox.py               # Bbox coordinate normalization helpers
-│
-├── services/                 # Use case orchestration
-│   ├── document_service.py   # Upload, delete, preview
-│   └── analysis_service.py   # Async Docling processing + chunking
-│
-└── tests/                    # pytest (199 tests)
+The backend follows ports and adapters. The core (`domain/`) defines what the app needs; `infra/` and `persistence/` plug real tools into it.
+
+```mermaid
+flowchart TB
+    Bootstrap("bootstrap/<br/>builds everything at start") --> API("api/<br/>HTTP routes")
+    API --> Services("services/<br/>use cases")
+    Services --> Domain{{"domain/<br/>models, rules, ports"}}
+    Infra("infra/<br/>Docling, Ollama, OpenSearch, Neo4j…") -.->|implements| Domain
+    Persistence("persistence/<br/>SQLite") -.->|implements| Domain
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class Bootstrap grey
+    class API,Services blue
+    class Domain orange
+    class Infra,Persistence teal
 ```
 
-### Layer responsibilities
+`tests/test_architecture.py` fails when a layer imports what it must not:
 
-| Layer | Role | Depends on |
-|-------|------|------------|
-| **domain** | Dataclasses, value objects, abstract ports | Nothing (pure Python) |
-| **persistence** | SQLite CRUD, aiosqlite | domain (models) |
-| **infra** | Adapters: converters, chunker, rate limiter, settings | domain (ports, value objects) |
-| **services** | Orchestrate use cases, call converters/chunkers | domain + persistence + infra |
-| **api** | HTTP endpoints, Pydantic DTOs, error handling | services |
+| Layer | Never imports |
+|-------|---------------|
+| `domain` | Any other layer, FastAPI, SQLAlchemy, httpx, the OpenSearch client |
+| `services` | `api`, `infra`, `persistence`, FastAPI |
+| `api` | `infra`, `persistence` |
+| `infra` | `api`, `services` |
+| `persistence` | `api`, `services`, `infra` |
 
-### API contract
+`main.py` creates the app and mounts the routes. `bootstrap/` builds the adapters and services from the settings.
 
-The API uses **camelCase** serialization (via Pydantic `alias_generator`), while the backend uses **snake_case** internally. The `pages_json` field contains raw `dataclasses.asdict()` output, so page data uses **snake_case** (`page_number`, not `pageNumber`).
+### API rules
 
-### API design rule — no UX-shaped routes (#269)
+- JSON is camelCase; Python is snake_case. Page data from Docling keeps snake_case (`page_number`).
+- One route does one domain operation. When a screen needs several calls, the frontend chains them in its store. The only exception is an operation that must be atomic, and its service says why. The route list and the reasoning behind this rule: [design doc 269](https://github.com/scub-france/Docling-Studio/blob/main/docs/design/269-backend-ddd-audit.md).
 
-The backend exposes **DDD-granular** services, not screens. One route ≈ one domain operation: chunk CRUD lives under `/api/documents/{id}/chunks/*`, store CRUD under `/api/stores/*`, document versions under `/api/documents/{id}/versions/*`, and so on.
+| Prefix | What it serves |
+|--------|----------------|
+| `/api/documents` | Documents, their chunks, versions, graph (Neo4j, deprecated), and Ask (`POST /api/documents/{id}/reasoning`) |
+| `/api/analyses` | Analyses: start, read, delete |
+| `/api/stores` | Ingestion targets (OpenSearch, Neo4j). Deprecated, removed in 0.8.0 |
+| `/api/ingestion` | Sending chunks to stores, when ingestion is on. Deprecated, removed in 0.8.0 |
+| `/api/config` | The reasoning settings edited in **Settings** |
+| `/api/health` | Status, engine, version, and the flags the frontend reads |
 
-If a UI screen needs several calls to render or submit, the sequencing is done **client-side** in a Pinia store action (`features/*/store.ts`). The backend never grows a "screen-shaped" aggregate route just because it would shorten one frontend function.
+### An analysis
 
-**Exceptions are limited to atomicity / transactional guarantees** the client cannot achieve by chaining calls — e.g. `POST .../chunks/{id}/split` writes two new chunks + an audit row atomically; doing it client-side would race the audit log. When such a bundled operation is added, the service docstring must spell out the atomicity argument.
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> PENDING
+    PENDING --> RUNNING
+    PENDING --> FAILED
+    RUNNING --> COMPLETED
+    RUNNING --> FAILED
+    COMPLETED --> [*]
+    FAILED --> [*]
 
-Reviewers: any new route under `/api/*` that doesn't fit one of these two buckets (single domain op, or named atomicity exception) is a red flag. See `docs/design/269-backend-ddd-audit.md` for the full classification of every route as of 0.6.1.
-
-## Frontend — Feature-Based
-
-The frontend is organized by feature, each with its own store, API client, and UI components.
-
-```
-frontend/src/
-├── app/                      # App shell, router, global styles
-├── pages/                    # Route-level pages
-│   ├── HomePage.vue
-│   ├── StudioPage.vue        # PDF viewer + config + results
-│   ├── DocumentsPage.vue
-│   ├── HistoryPage.vue
-│   └── SettingsPage.vue
-│
-├── features/                 # Feature modules
-│   ├── analysis/             # Analysis store, API, bbox scaling, UI
-│   │   ├── store.ts
-│   │   ├── api.ts
-│   │   ├── bboxScaling.ts    # Pure math: page coords → pixel coords
-│   │   └── ui/
-│   │       ├── BboxOverlay.vue
-│   │       ├── AnalysisPanel.vue
-│   │       ├── StructureViewer.vue
-│   │       └── ...
-│   ├── chunking/             # Chunk panel UI + rechunk action
-│   ├── document/             # Document store, API, upload
-│   ├── feature-flags/        # Feature flag store (reads /api/health)
-│   ├── history/              # History store, navigation
-│   └── settings/             # Theme, locale, API URL
-│
-└── shared/                   # Cross-feature utilities
-    ├── types.ts              # All shared TypeScript interfaces
-    ├── i18n.ts               # FR/EN translations
-    ├── format.ts             # Date/size formatters
-    └── api/http.ts           # HTTP client (fetch wrapper)
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    classDef red fill:#E539351F,stroke:#E53935,stroke-width:1.5px
+    class PENDING grey
+    class RUNNING blue
+    class COMPLETED green
+    class FAILED red
 ```
 
-### Data flow
+An analysis waits in `PENDING` until one of the `MAX_CONCURRENT_ANALYSES` slots is free. The result is stored in SQLite: Markdown and HTML, the pages with their boxes, and the full Docling document as JSON.
 
-```
-User action → Pinia store action → API client (fetch) → Backend REST endpoint
-                                                              │
-Backend response → Pinia store state → Vue reactivity → UI update
-```
+### Ask
 
-### Key design decisions
+`api/reasoning.py` calls `services/reasoning_service.py`, which runs [docling-agent](https://github.com/docling-project/docling-agent) through a port (`ReasoningRunner`). The adapter is `infra/docling_agent_reasoning.py`. `domain/trace_builder.py` turns the agent's raw result into the steps shown in the timeline.
 
-- **Pinia stores** per feature, not global. Each feature owns its state.
-- **TypeScript strict mode** with shared interfaces in `shared/types.ts`.
-- **No component library** — custom CSS with CSS variables for theming.
-- **vue-tsc** in CI to catch type errors before merge.
+## Frontend
 
-## Feature Flags
+| Folder | Content |
+|--------|---------|
+| `src/app/` | App shell and router |
+| `src/pages/` | One component per route, plus a few components only those pages use |
+| `src/features/<name>/` | One feature: `api.ts`, `store.ts`, `ui/`, and `index.ts` |
+| `src/shared/` | HTTP client, FR/EN texts, types, shared UI |
 
-The frontend adapts its UI based on the backend's capabilities. On startup, the feature flag store fetches `/api/health` and reads the `engine` and `deploymentMode` fields.
+A feature uses another feature only through its `index.ts`. ESLint enforces it (`no-restricted-imports`).
 
-| Flag | Condition | Effect |
-|------|-----------|--------|
-| `chunking` | `engine === 'local'` | Shows chunking options in the analysis panel |
-| `disclaimer` | `deploymentMode === 'huggingface'` | Shows a disclaimer banner at the top of the app |
+On start, the app reads `/api/health`. The answer decides which pages exist (`STUDIO_MODE_ENABLED`, `RAG_PIPELINE_ENABLED`) and whether the Ask tab shows up.
 
-This allows the same frontend build to work with both local and remote backends without conditional compilation.
+## Going further
 
-## Rate Limiting
-
-The backend applies a sliding-window rate limiter as middleware:
-
-- **60 requests** per **60 seconds** per client IP
-- The `/api/health` endpoint is excluded
-- When the limit is exceeded, the API returns `429 Too Many Requests` with a `Retry-After` header
-
-## Analysis Lifecycle
-
-An analysis job follows this state machine:
-
-```
-PENDING → RUNNING → COMPLETED
-                  → FAILED
-```
-
-| Status | Description |
-|--------|-------------|
-| `PENDING` | Job created, waiting for a processing slot |
-| `RUNNING` | Docling conversion in progress |
-| `COMPLETED` | Conversion finished — results available (markdown, HTML, pages, chunks) |
-| `FAILED` | Conversion error — `error_message` contains details |
-
-The backend limits parallel jobs via `MAX_CONCURRENT_ANALYSES` (default: 3) to avoid overloading the CPU during Docling processing.
-
-## Local vs Remote Mode
-
-The backend supports two conversion engines, selected via the `CONVERSION_ENGINE` environment variable:
-
-| | Local | Remote |
-|---|---|---|
-| **Engine** | In-process Docling (PyTorch) | HTTP client to [Docling Serve](https://github.com/DS4SD/docling-serve) |
-| **Chunking** | Available (in-process) | Not available |
-| **Docker image** | `latest-local` (~1.9 GB) | `latest-remote` (~270 MB) |
-| **ML models** | Downloaded on first run (~400 MB) | Managed by Docling Serve |
-| **CPU/RAM** | 4+ CPUs, 6+ GB RAM | 2 CPUs, 2 GB RAM |
-
-The converter is selected at startup in `main.py` via `_build_converter()`. The chunker (`_build_chunker()`) is only instantiated in local mode — in remote mode, the chunking feature flag is disabled and the UI hides the chunking panel.
-
-## Health Endpoint
-
-`GET /api/health` returns the backend status:
-
-```json
-{
-  "status": "ok",
-  "engine": "local",
-  "version": "0.3.0",
-  "deploymentMode": "self-hosted"
-}
-```
-
-The frontend uses this response to:
-
-1. Verify the backend is reachable
-2. Evaluate feature flags (chunking, disclaimer)
-3. Display the app version
+- [Bounding boxes](bbox-pipeline.md): how a Docling box becomes a rectangle on the page.
+- [Design docs](https://github.com/scub-france/Docling-Studio/tree/main/docs/design): one per feature, named after its issue.
+- [Architecture decisions](architecture/adr-guide.md), for example [ADR-001](architecture/adrs/ADR-001-graph-visualization-library.md) on the graph library.

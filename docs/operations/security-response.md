@@ -1,74 +1,71 @@
-# Security Vulnerability Response
+# Security response
 
-Process for handling reported security vulnerabilities. See also [SECURITY.md](https://github.com/scub-france/Docling-Studio/blob/main/SECURITY.md) for the public-facing policy.
+How maintainers handle a reported vulnerability. The public policy is [SECURITY.md](https://github.com/scub-france/Docling-Studio/blob/main/SECURITY.md).
 
-## Response Timeline
+## Timeline
 
-| Step | SLA | Action |
-|------|-----|--------|
-| **Acknowledge** | < 48h | Confirm receipt to the reporter |
-| **Assess** | < 7 days | Determine severity (Critical / High / Medium / Low) |
-| **Fix** | < 14 days (Critical), < 30 days (other) | Develop and test the fix |
-| **Release** | Same day as fix | Publish patched version |
-| **Disclose** | After release | Publish GitHub Security Advisory |
+| Step | Within | What to do |
+|------|--------|------------|
+| Acknowledge | 48 hours | Answer the reporter in the advisory |
+| Assess | 7 days | Set the severity (table below) |
+| Fix | 14 days if critical, 30 days otherwise | Fix and test in private |
+| Release | The day the fix is ready | Publish the patched version |
+| Disclose | After the release | Publish the GitHub Security Advisory |
 
-## Severity Assessment
+## Severity
 
 | Severity | Criteria | Example |
 |----------|----------|---------|
-| **Critical** | Remote exploitation, data breach, no auth required | SQL injection in upload endpoint |
-| **High** | Significant impact, some conditions required | Path traversal on file download |
-| **Medium** | Limited impact or requires authenticated access | XSS in analysis results display |
-| **Low** | Minimal impact, theoretical only | Information disclosure in error messages |
+| Critical | Remote exploit, data breach, no login needed | SQL injection on upload |
+| High | Serious impact under some conditions | Path traversal on file download |
+| Medium | Limited impact | XSS in the result display |
+| Low | Minimal, mostly theoretical | Details leaked in an error message |
 
-## Fix Process
+## Fix
 
-1. **Create a private branch** — never push vulnerability details to a public branch before the fix is released
-2. **Develop the fix** — include a regression test
-3. **Run the security audit** — `docs/audit/audits/08-security.md`
-4. **Review** — at least one maintainer must review the fix
-5. **Release** — tag, build, deploy (see [deployment checklist](../release/deployment-checklist.md))
-6. **Publish advisory** — GitHub Security Advisory with CVE if applicable
+The repository is public, so every branch is public. Work in private:
 
-## Advisory Template
+1. In the draft advisory, create a **temporary private fork** and fix there.
+2. Add a test that reproduces the problem.
+3. Check the fix against the [security audit checklist](../audit/audits/08-security.md).
+4. Get a review from another maintainer.
+5. Merge, release and deploy: see the [deployment checklist](../release/deployment-checklist.md).
+6. Publish the advisory, with a CVE if one was assigned.
+
+## Advisory template
 
 ```markdown
-# Security Advisory: [Title]
+# <Title>
 
-**Severity**: Critical | High | Medium | Low
-**Affected versions**: < X.Y.Z
-**Fixed in**: X.Y.Z
-**CVE**: CVE-YYYY-NNNNN (if assigned)
+- Severity: Critical | High | Medium | Low
+- Affected versions: < X.Y.Z
+- Fixed in: X.Y.Z
+- CVE: (if assigned)
 
 ## Description
-
-[What the vulnerability is, without providing exploitation details]
+What the problem is, without exploit details.
 
 ## Impact
-
-[What an attacker could do]
+What an attacker could do.
 
 ## Mitigation
-
-[Upgrade to X.Y.Z or apply workaround]
+Upgrade to X.Y.Z, or the workaround.
 
 ## Credit
-
-[Reporter name, unless they prefer anonymity]
+The reporter, unless they prefer not.
 ```
 
-## Dependency Vulnerabilities
-
-Run regular dependency audits:
+## Dependencies
 
 ```bash
-# Backend
-cd document-parser && pip audit
-
-# Frontend
-cd frontend && npm audit
+cd document-parser
+uv pip install pip-audit
+uv run pip-audit
 ```
 
-For known vulnerabilities in dependencies:
-- **Critical/High**: Update immediately, release a patch version
-- **Medium/Low**: Include in the next planned release
+```bash
+cd frontend
+npm audit
+```
+
+Critical or high: update now and ship a patch release. Medium or low: include it in the next release. The release gate also runs both audits on every release pull request.

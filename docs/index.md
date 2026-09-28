@@ -1,52 +1,41 @@
 # Docling Studio
 
-A visual document analysis studio powered by [Docling](https://github.com/DS4SD/docling).
+Docling Studio is a web app to see what [Docling](https://github.com/docling-project/docling) extracts from a PDF. Import a document, run an analysis, and check each title, paragraph, table and picture against the page it came from.
 
-Upload a PDF, configure the extraction pipeline, and visualize the results — text, tables, images, formulas, bounding boxes — all from your browser.
+```mermaid
+flowchart LR
+    PDF(["Your PDF"]) --> Docling("Docling analysis")
+    Docling --> View("Boxes on the page<br/>+ document tree")
+    View --> Ask("Ask a question")
+    View --> Export("Markdown or<br/>Docling JSON")
 
-![Docling Studio architecture](images/global.png){ width="600" }
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class PDF grey
+    class Docling blue
+    class View orange
+    class Ask,Export teal
+```
 
-![Docling Studio — Execution Result](screenshots/DS-execution-result.png)
-
-## Features
-
-- **PDF viewer** with page navigation, bounding box overlay, and resizable results panel
-- **Configurable Docling pipeline** — OCR, table extraction, code/formula enrichment, picture classification & description, image generation
-- **Bounding box visualization** — color-coded element overlay directly on the PDF
-- **Chunking** — split extracted content into semantic chunks (hierarchical, hybrid, or page-based) with configurable token limits
-- **Markdown & HTML export** of extracted content
-- **Document management** — upload, list, delete
-- **Analysis history** — re-visit and open past analyses
-- **Feature flags** — capabilities adapt to the conversion engine (local vs remote)
-- **Upload limits** — configurable max file size (`MAX_FILE_SIZE_MB`) and max page count (`MAX_PAGE_COUNT`) per document
-- **Rate limiting** — configurable requests per minute per IP (`RATE_LIMIT_RPM`)
-- **Deployment modes** — self-hosted (default) or HuggingFace Spaces (with disclaimer banner)
-- **Health endpoint** — `/api/health` reports engine type, deployment mode, and database status
-- **Dark / Light theme** and **FR / EN** localization
-
-## Tech Stack
-
-| Layer | Stack |
-|-------|-------|
-| **Frontend** | Vue 3, TypeScript, Vite, Pinia |
-| **Backend** | FastAPI, Docling 2.x, SQLite (aiosqlite) |
-| **CI** | GitHub Actions (lint, type-check, test, build) |
-| **Infra** | Docker Compose + Nginx |
-
-## Quick Start
+Try it with one command:
 
 ```bash
-# Docker (fastest)
 docker run -p 3000:3000 ghcr.io/scub-france/docling-studio:latest-local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and upload a PDF.
+Then open <http://localhost:3000>.
 
-!!! note
-    The first analysis takes longer as Docling downloads its ML models (~400 MB). Subsequent runs are fast.
+## Where to go next
 
-See [Getting Started](getting-started.md) for local development setup.
+| I want to… | Read |
+|------------|------|
+| Install and run it | [Get started](getting-started.md) |
+| Learn the screens | [User guide](user-guide.md) |
+| Change a setting | [Configuration](configuration.md) |
+| Fix a problem | [Troubleshooting](troubleshooting.md) |
+| Change the code | [Contributing](https://github.com/scub-france/Docling-Studio/blob/main/CONTRIBUTING.md), then [Architecture](architecture.md) |
+| Publish a release | [Maintainers](maintainers.md) |
 
-## License
-
-[MIT](https://github.com/scub-france/Docling-Studio/blob/main/LICENSE) — Pier-Jean Malandrino
+Docling Studio is open source under the [MIT license](https://github.com/scub-france/Docling-Studio/blob/main/LICENSE).

@@ -1,93 +1,32 @@
-# Incident Response
+# Incident response
 
-## Severity Levels
+## Severity
 
-| Level | Description | Examples | Response time |
-|-------|-------------|----------|---------------|
-| **SEV-1** | Service down, data loss, security breach | App unreachable, DB corrupted, credentials leaked | Immediate |
-| **SEV-2** | Major feature broken, degraded for all users | Upload fails, analysis crashes, blank pages | < 2 hours |
-| **SEV-3** | Minor feature broken, workaround exists | Bbox overlay misaligned, locale missing a key | Next business day |
+| Level | What it means | Examples | React |
+|-------|---------------|----------|-------|
+| **SEV-1** | Service down, data lost, security breach | App unreachable, database corrupted, secret leaked | Now |
+| **SEV-2** | A main feature is broken for everyone | Import fails, analyses crash, blank pages | Within 2 hours |
+| **SEV-3** | A minor feature is broken, there is a workaround | Boxes misaligned, a missing translation | Next working day |
 
-## Response Steps
+## Steps
 
-### 1. Detect
+1. **Detect.** `/api/health` shows `"status": "degraded"` or does not answer, a user opens an issue, CI fails on `main`, or a container keeps restarting. `/api/health` always answers HTTP 200: read the `status` and `database` fields.
+2. **Assess.** Pick the severity. Find the broken part (backend, frontend, Docker, CI) and what changed last: `git log --oneline -10 main`.
+3. **Tell people.** SEV-1: warn every maintainer right away. SEV-2 and SEV-3: open an issue labeled `bug`, with `P0` or `P1`.
+4. **Mitigate first.** If it started with a deploy, [roll back](../release/rollback-playbook.md). If Docling itself fails in the backend, switch to the remote engine: the `-remote` image with `DOCLING_SERVE_URL`, or `CONVERSION_MODE=remote docker compose --profile remote up -d --build`.
+5. **Fix.** Branch `hotfix/*` from `main`, fix the cause, add a test that reproduces it, then follow the [deployment checklist](../release/deployment-checklist.md).
+6. **Write it up** for SEV-1 and SEV-2, in the incident issue.
 
-- Health endpoint returns error (`/api/health`)
-- User report via GitHub issue
-- CI/CD pipeline failure on `main`
-- Docker container crash loop
-
-### 2. Assess
-
-- Determine severity (SEV-1/2/3)
-- Identify affected component: backend, frontend, Docker, CI
-- Check recent deployments: `git log --oneline -10 main`
-
-### 3. Communicate
-
-- **SEV-1**: Notify all maintainers immediately
-- **SEV-2**: Open a GitHub issue with `priority: P0` label
-- **SEV-3**: Open a GitHub issue with `priority: P1` label
-
-### 4. Mitigate
-
-**Rollback first, investigate later.**
-
-- If the issue appeared after a deploy → [rollback](../release/rollback-playbook.md)
-- If the issue is in a specific endpoint → disable the route or return a maintenance response
-- If the issue is in Docling itself → switch to remote mode (`CONVERSION_ENGINE=remote`)
-
-### 5. Fix
-
-- Create a `hotfix/*` branch from the last stable tag
-- Fix the root cause, add a regression test
-- Run the [release audit](../audit/master.md) on the fix
-- Deploy via the [deployment checklist](../release/deployment-checklist.md)
-
-### 6. Post-Mortem
-
-Write a post-mortem for SEV-1 and SEV-2 incidents using this template:
+## Post-mortem template
 
 ```markdown
-# Post-Mortem: [Incident Title]
+## Post-mortem: <title>
 
-**Date**: YYYY-MM-DD
-**Severity**: SEV-X
-**Duration**: Xh Xm
-**Author**: [name]
-
-## Timeline
-
-| Time | Event |
-|------|-------|
-| HH:MM | Incident detected |
-| HH:MM | Severity assessed |
-| HH:MM | Mitigation applied |
-| HH:MM | Root cause identified |
-| HH:MM | Fix deployed |
-| HH:MM | Incident resolved |
-
-## Root Cause
-
-[What actually broke and why]
-
-## Impact
-
-[Who was affected, for how long, what data was at risk]
-
-## What Went Well
-
-- ...
-
-## What Went Wrong
-
-- ...
-
-## Action Items
-
-| Action | Owner | Due |
-|--------|-------|-----|
-| ... | ... | ... |
+- Date, severity, duration:
+- Timeline: detected / mitigated / root cause found / fixed
+- Root cause:
+- Impact (who, how long, which data):
+- What went well:
+- What went wrong:
+- Actions (owner, due date):
 ```
-
-Store post-mortems in `docs/operations/post-mortems/YYYY-MM-DD-short-title.md`.

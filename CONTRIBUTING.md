@@ -1,67 +1,69 @@
-# Contributing to Docling Studio
+# Contributing
 
-Thank you for your interest in contributing to Docling Studio! This guide will help you get started.
+## How a change flows
 
-## Getting Started
+```mermaid
+flowchart LR
+    Issue(["Issue"]) --> Branch("Branch from<br/>release/x.y.z")
+    Branch --> PR("Pull request to<br/>release/x.y.z")
+    PR --> Release("release/x.y.z")
+    Release -->|release PR,<br/>then tag vX.Y.Z| Main(["main"])
 
-1. **Fork** the repository on GitHub
-2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/<your-username>/Docling-Studio.git
-   cd Docling-Studio
-   ```
-3. **Create a branch** for your work:
-   ```bash
-   git checkout -b feature/my-feature
-   ```
-
-## Development Setup
-
-### Docker Dev Stack (recommended)
-
-The fastest way to start the local frontend and parser:
-
-```bash
-COMPOSE_PROFILES=default docker compose -f docker-compose.dev.yml up
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    class Issue grey
+    class Branch,PR,Release orange
+    class Main green
 ```
 
-This starts the frontend and SQLite-backed parser. To include OpenSearch, Dashboards,
-embedding, and Neo4j, use `COMPOSE_PROFILES=ingestion`.
+- Every change starts from a GitHub issue.
+- Branch from the current release branch, never from `main`. `main` only receives releases and hotfixes. The current release branch is the highest one in `git branch -r --list 'origin/release/*'`.
+- Name the branch `<type>/<issue>-<short-slug>`, where type is `feature`, `fix`, `docs`, `test` or `chore`. Example: `fix/142-upload-empty-pdf`.
+- Open the pull request against that release branch, with `Closes #<issue>` in the description.
+- Urgent fix on a published version: branch `hotfix/...` from `main`, pull request to `main`.
 
-The default stack starts:
+## Set up
 
-| Service | URL | Notes |
-|---------|-----|-------|
-| Frontend (Vite) | http://localhost:3000 | HMR enabled |
-| Backend (FastAPI) | http://localhost:8000 | Auto-reload on file changes |
-
-Source code is bind-mounted — edits on your host are reflected immediately.
-
-To use remote conversion mode instead of local:
+### With Docker
 
 ```bash
-COMPOSE_PROFILES=remote CONVERSION_MODE=remote docker compose -f docker-compose.dev.yml up
+COMPOSE_PROFILES=default docker compose -f docker-compose.dev.yml up --build
 ```
 
-### Manual Setup
+Open <http://localhost:3000>. The frontend reloads on save (Vite) and so does the backend (`uvicorn --reload`). The backend port is not published: the Vite server forwards `/api` to it.
 
-If you prefer running services directly on your machine:
+| Add this profile | To get |
+|------------------|--------|
+| `remote` | Docling Serve. Also set `CONVERSION_MODE=remote`. |
+| `graph` | Neo4j. Deprecated. |
+| `ingestion` | OpenSearch, OpenSearch Dashboards, the embedding service and Neo4j. Deprecated. |
 
-### Backend (Python 3.12+)
+Example: `COMPOSE_PROFILES=default,remote`.
+
+`graph` and `ingestion` are deprecated: they go away with ingestion in 0.8.0. The dev file does not connect the backend to their services on its own. Put their addresses in `.env`:
+
+```bash
+OPENSEARCH_URL=http://opensearch:9200
+EMBEDDING_URL=http://embedding:8001
+NEO4J_URI=bolt://neo4j:7687
+```
+
+Working in several git worktrees? Prepare each one with `.development_scripts/worktree_setup.sh -s <main checkout> -w <worktree>`. Each can then run the `default` profile with its own `COMPOSE_PROJECT_NAME` and `FRONTEND_HOST_PORT`.
+
+### Without Docker
+
+Backend, with Python 3.12, [uv](https://docs.astral.sh/uv/) and poppler (`brew install poppler` or `apt install poppler-utils`), which renders the page previews:
 
 ```bash
 cd document-parser
-uv sync --group dev
-
-# Remote mode (lightweight — delegates to Docling Serve)
-uv run uvicorn main:app --reload --port 8000
-
-# Local mode (full — runs Docling in-process)
 uv sync --group dev --group local
 uv run uvicorn main:app --reload --port 8000
 ```
 
-### Frontend (Node 20+)
+Add `--group reasoning` to `uv sync` if you need Ask. The API documentation is at <http://localhost:8000/docs>.
+
+Frontend, with Node 20:
 
 ```bash
 cd frontend
@@ -69,165 +71,54 @@ npm install
 npm run dev
 ```
 
-## Code Quality
+Open <http://localhost:3000>. `/api` is forwarded to <http://localhost:8000>.
 
-### Backend — Ruff
+## Before you push
 
-We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting Python code.
+Backend:
 
 ```bash
 cd document-parser
-uv run ruff check .          # lint
-uv run ruff check . --fix    # lint with auto-fix
-uv run ruff format .         # format
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest tests/
 ```
 
-### Frontend — TypeScript + ESLint + Prettier
+Frontend:
 
 ```bash
 cd frontend
-npm run type-check          # type check (vue-tsc)
-npx eslint src/             # lint
-npx prettier --check src/   # check formatting
-npx prettier --write src/   # auto-format
-```
-
-## Running Tests
-
-```bash
-# Backend (377 tests)
-cd document-parser
-uv run pytest tests/ -v
-
-# Frontend (156 tests)
-cd frontend
+npm run lint
+npm run format:check
+npm run type-check
 npm run test:run
 ```
 
-### E2E API (Karate)
+New behavior needs a test. The CI runs the lint, type-check and tests on every pull request. The format checks are yours to run.
 
-```bash
-# Generate test PDFs + start stack
-python e2e/generate-test-data.py
-docker compose up -d --wait
+### End-to-end tests
 
-# Run all API tests
-mvn test -f e2e/api/pom.xml
+They use [Karate](https://karatelabs.github.io/karate/) and need Java 17, Maven, Python and Docker. The commands, with the settings the CI uses, are in [e2e/api/README.md](e2e/api/README.md) and [e2e/ui/README.md](e2e/ui/README.md). How to write a test: [e2e/CONVENTIONS.md](e2e/CONVENTIONS.md).
 
-# Or by tag: @smoke, @regression, @e2e
-mvn test -f e2e/api/pom.xml -Dkarate.options="--tags @smoke"
-```
+## Commits and pull requests
 
-### E2E UI (Karate UI)
+- Commit messages follow [Conventional Commits](docs/git-workflow/commit-conventions.md): `fix(upload): reject empty PDFs`.
+- One issue per branch, one topic per pull request.
+- User-visible change: add a line under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md).
+- Fill in the pull request template.
+- Reviews follow the [review checklist](docs/git-workflow/code-review-checklist.md), merges the [merge policy](docs/git-workflow/merge-policy.md).
 
-```bash
-# Generate test PDFs + start stack (if not already running)
-python e2e/generate-test-data.py
-docker compose up -d --wait
+## Bigger changes
 
-# Run critical UI tests (CI scope)
-mvn test -f e2e/ui/pom.xml -Dkarate.options="--tags @critical"
+- A new feature gets a design doc in `docs/design/`, named `<issue>-<slug>.md`. Copy the structure of a recent one.
+- An architecture choice gets an [ADR](docs/architecture/adr-guide.md).
+- Read [Architecture](docs/architecture.md) first.
 
-# Run all UI tests (local scope)
-mvn test -f e2e/ui/pom.xml -Dkarate.options="--tags @ui"
-```
+## Bugs and security
 
-All tests must pass before submitting a PR.
-
-## Submitting Changes
-
-1. **Commit** with clear, descriptive messages
-2. **Push** your branch to your fork
-3. Open a **Pull Request** against `main`
-4. Describe **what** changed and **why** in the PR description
-5. Ensure CI passes (tests + build)
-
-## Branching Strategy
-
-We follow a simplified Git Flow:
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Always stable — latest release merged back |
-| `release/X.Y.Z` | Release preparation (freeze, bugfixes, changelog) |
-| `feature/*` | New features — PR to `main` |
-| `fix/*` | Bug fixes — PR to `main` (or `release/*` for pre-release fixes) |
-| `hotfix/X.Y.Z` | Urgent fix on a released version — PR to `main` |
-
-Rules:
-- All PRs target `main` (never stack branches on other feature branches)
-- `release/*` branches are created from `main` when preparing a release
-- `hotfix/*` branches are created from the release tag
-
-## Versioning
-
-We use [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
-
-- **Source of truth**: the git tag (`vX.Y.Z`)
-- `package.json` version should match the current release branch
-- The build injects the version automatically (Vite `__APP_VERSION__` for frontend, `APP_VERSION` env var for backend)
-
-## Release Process
-
-1. **Create the release branch** from `main`:
-   ```bash
-   git checkout main && git pull
-   git checkout -b release/X.Y.Z
-   ```
-
-2. **On the release branch**, only:
-   - Bug fixes
-   - Move `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD` in `CHANGELOG.md`
-   - Update `version` in `frontend/package.json`
-
-3. **Merge into `main`** via PR, then **tag on `main`**:
-   ```bash
-   git checkout main && git pull
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
-
-4. The tag triggers the **release workflow** which builds and pushes the Docker image to `ghcr.io`.
-
-### Docker Image Tags
-
-Each release produces two image variants:
-
-| Tag | Description |
-|-----|-------------|
-| `X.Y.Z-remote` | Exact version — lightweight (Docling Serve) |
-| `X.Y.Z-local` | Exact version — full (in-process Docling) |
-| `X.Y-remote` | Latest patch of this minor — lightweight |
-| `X.Y-local` | Latest patch of this minor — full |
-| `latest-remote` | Latest stable — lightweight |
-| `latest-local` | Latest stable — full |
-
-### Hotfix
-
-```bash
-git checkout vX.Y.Z           # from the release tag
-git checkout -b hotfix/X.Y.Z+1
-# fix, commit, PR to main
-git tag vX.Y.Z+1              # tag on main after merge
-```
-
-### Changelog
-
-We follow [Keep a Changelog](https://keepachangelog.com/). Every PR should add a line under `[Unreleased]` in `CHANGELOG.md`. The release branch moves `[Unreleased]` to the versioned section.
-
-## Pull Request Guidelines
-
-- Keep PRs focused — one feature or fix per PR
-- Add tests for new functionality
-- Update documentation if behavior changes
-- Follow existing code style and conventions
-
-## Reporting Issues
-
-- Use GitHub Issues to report bugs or request features
-- Include steps to reproduce for bugs
-- Mention your OS, Python/Node version, and Docker version if relevant
+- Bugs and ideas: open a [GitHub issue](https://github.com/scub-france/Docling-Studio/issues).
+- Security problems: do not open a public issue. See [SECURITY.md](SECURITY.md).
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing, you agree that your work is published under the [MIT license](LICENSE).

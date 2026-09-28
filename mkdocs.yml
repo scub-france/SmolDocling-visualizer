@@ -1,11 +1,13 @@
 site_name: Docling Studio
-site_description: Visual document analysis studio powered by Docling
+site_description: Look inside what Docling extracts from your PDFs
 site_url: https://scub-france.github.io/Docling-Studio/
 repo_url: https://github.com/scub-france/Docling-Studio
 repo_name: scub-france/Docling-Studio
 
 theme:
   name: material
+  logo: images/logo.png
+  favicon: images/logo.png
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -31,65 +33,48 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - Architecture: architecture.md
-  - Bbox Pipeline: bbox-pipeline.md
-  - Contributing: contributing.md
-  - Processes: PROCESSES.md
-  - Development:
-      - Coding Standards: architecture/coding-standards.md
-      - Commit Conventions: git-workflow/commit-conventions.md
-      - Code Review Checklist: git-workflow/code-review-checklist.md
-      - Merge Policy: git-workflow/merge-policy.md
-      - ADR Guide: architecture/adr-guide.md
-      - ADR Template: architecture/adr-template.md
-  - Release:
-      - Deployment Checklist: release/deployment-checklist.md
-      - Rollback Playbook: release/rollback-playbook.md
-  - Operations:
-      - Incident Response: operations/incident-response.md
-      - Security Response: operations/security-response.md
-      - Monitoring Checklist: operations/monitoring-checklist.md
-  - Community:
-      - Onboarding Guide: community/onboarding-guide.md
-      - Issue Triage: community/issue-triage-process.md
-      - Roadmap Template: community/roadmap-template.md
-  - Audit:
-      - Audit Master: audit/master.md
-      - Audits:
-          - Hexagonal Architecture: audit/audits/01-clean-architecture.md
-          - DDD: audit/audits/02-ddd.md
-          - Clean Code: audit/audits/03-clean-code.md
-          - KISS: audit/audits/04-kiss.md
-          - DRY: audit/audits/05-dry.md
-          - SOLID: audit/audits/06-solid.md
-          - Decoupling: audit/audits/07-decoupling.md
-          - Security: audit/audits/08-security.md
-          - Tests: audit/audits/09-tests.md
-          - CI & Build: audit/audits/10-ci-build.md
-          - Documentation: audit/audits/11-documentation.md
-          - Performance: audit/audits/12-performance.md
+  - Get started: getting-started.md
+  - User guide: user-guide.md
+  - Configuration: configuration.md
+  - Troubleshooting: troubleshooting.md
+  - Contribute:
+      - Contributing: https://github.com/scub-france/Docling-Studio/blob/main/CONTRIBUTING.md
+      - Architecture: architecture.md
+      - Bounding boxes: bbox-pipeline.md
+  - Maintain: maintainers.md
+
+extra_css:
+  - stylesheets/extra.css
+
+# Kept in the repo for maintainers and tooling, not published on the site.
+exclude_docs: |
+  audit/reports/
+  design/
+  demo/
+  claude-code-commands.md
+  git-workflow/autonomy-mode.md
 
 validation:
   nav:
+    # Process pages are reached from maintainers.md, not from the nav.
     omitted_files: info
     absolute_links: info
   links:
     absolute_links: info
-    # Audit reports (audit/reports/release-X.Y.Z/) reference repo source
-    # files (e.g. `[file.py:line](file.py:line)`) by design — they're read
-    # alongside the repo, not as standalone docs. Downgrade these to info
-    # so strict-mode builds don't fail on intentional cross-tree links.
-    not_found: info
+    not_found: warn
     unrecognized_links: info
 
 markdown_extensions:
   - admonition
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - tables
   - toc:
       permalink: true

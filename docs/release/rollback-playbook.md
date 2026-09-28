@@ -1,83 +1,51 @@
-# Rollback Playbook
+# Rollback playbook
 
-## Decision: Rollback vs Hotfix?
+## Roll back or fix forward?
 
-| Situation | Strategy |
-|-----------|----------|
-| Broken deploy, previous version was stable | **Rollback** |
-| Bug found but previous version also had issues | **Hotfix** |
-| Data migration was applied (DB schema changed) | **Hotfix** (rollback may lose data) |
-| Security vulnerability in the new release | **Rollback** + hotfix in parallel |
+| Situation | Do this |
+|-----------|---------|
+| The new version is broken, the previous one worked | Roll back |
+| The previous version has the same bug | Hotfix |
+| The new version changed the database | Hotfix, or roll back with the database backup |
+| Security hole in the new version | Roll back, and hotfix in parallel |
 
-## Rollback Procedure — Docker Compose
+There are no database migrations. The schema is created at first start and never altered afterwards, so an older version can fail on a database written by a newer one.
 
-### 1. Identify the last known good version
+## Docker image
 
-```bash
-# List available tags
-docker image ls ghcr.io/scub-france/docling-studio --format '{{.Tag}}' | sort -V
+1. Find the last good version:
 
-# Or check GitHub releases
-gh release list --repo scub-france/Docling-Studio
-```
+    ```bash
+    gh release list --repo scub-france/Docling-Studio
+    ```
 
-### 2. Pin the image to the previous version
+2. Remove the current container and start the previous version with the same volumes:
 
-Edit `docker-compose.yml` or `docker-compose.override.yml`:
+    ```bash
+    docker rm -f docling-studio
+    docker run -d --name docling-studio --restart unless-stopped -p 3000:3000 -v docling-data:/app/data -v docling-uploads:/app/uploads ghcr.io/scub-france/docling-studio:<previous>-local
+    ```
 
-```yaml
-services:
-  backend:
-    image: ghcr.io/scub-france/docling-studio:0.2.0-remote  # pin to last good
-  frontend:
-    image: ghcr.io/scub-france/docling-studio:0.2.0-remote
-```
+3. If it fails on the database, restore the backup taken before the upgrade. The file is `docling_studio.db` in the `/app/data` volume.
+4. Check `curl -s http://localhost:3000/api/health` shows the previous version.
 
-### 3. Restart
+## Docker Compose
+
+Check out the previous tag and rebuild:
 
 ```bash
-docker compose down
-docker compose up -d --wait
+git checkout v<previous>
+docker compose up -d --build
 ```
 
-### 4. Verify
+The database lives in the `db_data` volume.
 
-```bash
-curl -s http://localhost:3000/api/health | jq .
-# Confirm version matches the rolled-back version
-```
+## HuggingFace Space
 
-### 5. Communicate
+Upload the previous tag from a clean clone, as in the [deployment checklist](deployment-checklist.md#huggingface-space), and add `--delete "*"` to the `hf upload` command. Without it, files that only the newer version had stay in the Space. It also deletes any file that exists only on the Space side.
 
-- Notify the team that a rollback was performed
-- Open an issue describing the failure
-- Link the failed release and the rollback commit
+## Afterwards
 
-## Rollback Procedure — Hugging Face Space
-
-1. Use `git revert` on the HF Space repo to revert to the previous commit
-2. Or re-upload the previous version: `huggingface-cli upload <space-id> . . --repo-type space --revision <previous-commit>`
-3. Verify the app loads correctly
-
-## Database Considerations
-
-Docling Studio uses **SQLite** with a file-based database. Key points:
-
-- **No schema migrations** are applied automatically — the schema is created on first run
-- If a new release adds columns, rolling back may cause "unknown column" errors
-- **Before deploying a release that changes the DB schema**: back up the SQLite file
-
-```bash
-# Backup before deploy
-cp data/docling-studio.db data/docling-studio.db.bak-$(date +%Y%m%d)
-
-# Restore after rollback
-cp data/docling-studio.db.bak-YYYYMMDD data/docling-studio.db
-```
-
-## Post-Rollback
-
-1. Keep the rollback in place until the root cause is identified
-2. Fix the issue on a `hotfix/*` branch
-3. Re-run the [release audit](../audit/master.md) on the fix
-4. Re-deploy following the [deployment checklist](deployment-checklist.md)
+1. Open an issue describing the failure, with the version and the logs.
+2. Fix it on a `hotfix/*` branch from `main`.
+3. Deploy the fix with the [deployment checklist](deployment-checklist.md).
