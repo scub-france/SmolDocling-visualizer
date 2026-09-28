@@ -41,6 +41,8 @@ Only PDFs are accepted; other files are skipped. Files over the size limit (50 M
 
 Importing does not analyze the PDF. That is the next step.
 
+To look at the pages first, open the document from **Docs**. It shows in the same viewer as a result, without the boxes: switch between **Page** and **Scroll**, or type a page number.
+
 ## Run an analysis
 
 1. In **Docs**, click **Open visualization** on the document.
