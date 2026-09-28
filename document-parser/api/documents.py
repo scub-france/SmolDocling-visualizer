@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, Response
 
 from api import deps  # noqa: TC001
-from api.schemas import DocStoreLinkResponse, DocumentResponse
+from api.schemas import DocStoreLinkResponse, DocumentResponse, PageSizeResponse
 from services.document_service import DocumentService
 from services.export_service import ExportFormat, ExportNotFoundError, build_content_disposition
 
@@ -198,3 +198,24 @@ async def preview(
     except Exception as exc:
         logger.exception("Unexpected error generating preview for %s", doc_id)
         raise HTTPException(status_code=422, detail="Failed to generate preview") from exc
+
+
+@router.get("/{doc_id}/pages", response_model=list[PageSizeResponse])
+async def page_sizes(doc_id: str, service: deps.DocumentServiceDep) -> list[PageSizeResponse]:
+    """Size of each page of the PDF, so the preview can lay out its pages
+    before any analysis (#352)."""
+    doc = await service.find_by_id(doc_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    try:
+        file_content = await asyncio.to_thread(Path(doc.storage_path).read_bytes)
+        pages = await asyncio.to_thread(DocumentService.page_sizes, file_content)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="PDF file not found on disk") from exc
+    except Exception as exc:
+        logger.exception("Could not read the page sizes of %s", doc_id)
+        raise HTTPException(status_code=422, detail="Failed to read PDF file") from exc
+    return [
+        PageSizeResponse(page_number=p.page_number, width=p.width, height=p.height) for p in pages
+    ]

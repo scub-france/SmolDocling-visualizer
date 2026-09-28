@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import io
 import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pypdfium2 as pdfium
 import pytest
 
 from domain.models import Document
@@ -94,6 +96,32 @@ class TestUploadValidation:
         assert os.path.exists(doc.storage_path)
         with open(doc.storage_path, "rb") as f:
             assert f.read() == content
+
+
+def pdf_with_pages(*sizes: tuple[float, float]) -> bytes:
+    """A real PDF whose pages have the given (width, height), in points."""
+    pdf = pdfium.PdfDocument.new()
+    for width, height in sizes:
+        pdf.new_page(width, height).close()
+    buffer = io.BytesIO()
+    pdf.save(buffer)
+    pdf.close()
+    return buffer.getvalue()
+
+
+class TestPageSizes:
+    def test_reads_the_size_of_every_page(self):
+        pages = DocumentService.page_sizes(pdf_with_pages((612, 792), (842, 595)))
+
+        assert [(p.page_number, p.width, p.height) for p in pages] == [
+            (1, 612, 792),
+            (2, 842, 595),
+        ]
+        assert all(p.elements == [] for p in pages)
+
+    def test_raises_on_a_file_that_is_not_a_pdf(self):
+        with pytest.raises(pdfium.PdfiumError):
+            DocumentService.page_sizes(b"%PDF-not really")
 
 
 class TestGeneratePreview:
