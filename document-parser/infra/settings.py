@@ -9,6 +9,19 @@ from domain.app_config import MAX_ITERATIONS_MAX as _MAX_ITERATIONS_MAX
 from domain.app_config import MAX_ITERATIONS_MIN as _MAX_ITERATIONS_MIN
 
 
+def _derived_timeouts(conversion_timeout: int) -> tuple[float, int]:
+    """Defaults for DOCUMENT_TIMEOUT and LOCK_TIMEOUT, from the analysis budget (#349).
+
+    Docling stops cleanly two minutes before the analysis gives up, and the
+    converter lock outlasts it by one. Under a 4-minute budget those margins
+    would go negative, so they shrink to a half and three quarters: the
+    cascade document < lock < conversion holds for any budget.
+    """
+    document = max(conversion_timeout - 120, conversion_timeout / 2)
+    lock = int(max(conversion_timeout - 60, conversion_timeout * 3 / 4))
+    return float(document), lock
+
+
 @dataclass(frozen=True)
 class Settings:
     app_version: str = "dev"
@@ -16,9 +29,9 @@ class Settings:
     deployment_mode: str = "self-hosted"  # "self-hosted" or "huggingface"
     docling_serve_url: str = "http://localhost:5001"
     docling_serve_api_key: str | None = None
-    conversion_timeout: int = 900
-    document_timeout: float = 120.0  # Docling-level per-document timeout (seconds)
-    lock_timeout: int = 300  # converter lock acquisition timeout (seconds)
+    conversion_timeout: int = 900  # budget of one analysis, once out of the queue
+    document_timeout: float = 780.0  # Docling-level per-document timeout (seconds)
+    lock_timeout: int = 840  # converter lock acquisition timeout (seconds)
     max_concurrent_analyses: int = 3
     default_table_mode: str = "accurate"  # "accurate" or "fast"
     max_page_count: int = 0  # 0 = unlimited (upload validation)
@@ -147,15 +160,17 @@ class Settings:
         paste_types_raw = os.environ.get(
             "PASTE_ALLOWED_IMAGE_TYPES", "image/png,image/jpeg,image/webp"
         )
+        conversion_timeout = int(os.environ.get("CONVERSION_TIMEOUT", "900"))
+        document_default, lock_default = _derived_timeouts(conversion_timeout)
         return cls(
             app_version=os.environ.get("APP_VERSION", "dev"),
             conversion_engine=os.environ.get("CONVERSION_ENGINE", "local"),
             deployment_mode=os.environ.get("DEPLOYMENT_MODE", "self-hosted"),
             docling_serve_url=os.environ.get("DOCLING_SERVE_URL", "http://localhost:5001"),
             docling_serve_api_key=os.environ.get("DOCLING_SERVE_API_KEY"),
-            conversion_timeout=int(os.environ.get("CONVERSION_TIMEOUT", "900")),
-            document_timeout=float(os.environ.get("DOCUMENT_TIMEOUT", "120.0")),
-            lock_timeout=int(os.environ.get("LOCK_TIMEOUT", "300")),
+            conversion_timeout=conversion_timeout,
+            document_timeout=float(os.environ.get("DOCUMENT_TIMEOUT", document_default)),
+            lock_timeout=int(os.environ.get("LOCK_TIMEOUT", lock_default)),
             max_concurrent_analyses=int(os.environ.get("MAX_CONCURRENT_ANALYSES", "3")),
             default_table_mode=os.environ.get("DEFAULT_TABLE_MODE", "accurate"),
             max_page_count=int(os.environ.get("MAX_PAGE_COUNT", "0")),

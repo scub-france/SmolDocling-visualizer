@@ -14,8 +14,8 @@ class TestSettingsDefaults:
         assert s.docling_serve_url == "http://localhost:5001"
         assert s.docling_serve_api_key is None
         assert s.conversion_timeout == 900
-        assert s.document_timeout == 120.0
-        assert s.lock_timeout == 300
+        assert s.document_timeout == 780.0
+        assert s.lock_timeout == 840
         assert s.max_page_count == 0
         assert s.max_file_size_mb == 50
         assert s.max_paste_image_size_mb == 10
@@ -237,3 +237,35 @@ class TestSettingsFromEnv:
         s = Settings.from_env()
         assert len(s.cors_origins) == 3
         assert s.cors_origins[2] == "http://c.com"
+
+
+class TestDerivedTimeouts:
+    """#349 — docling and the lock follow the analysis budget unless set."""
+
+    @staticmethod
+    def _from_env(monkeypatch, **env: str) -> Settings:
+        for key in ("CONVERSION_TIMEOUT", "DOCUMENT_TIMEOUT", "LOCK_TIMEOUT"):
+            monkeypatch.delenv(key, raising=False)
+        for key, value in env.items():
+            monkeypatch.setenv(key, value)
+        return Settings.from_env()
+
+    def test_default_budget(self, monkeypatch):
+        s = self._from_env(monkeypatch)
+        assert (s.document_timeout, s.lock_timeout, s.conversion_timeout) == (780.0, 840, 900)
+
+    def test_follow_a_longer_budget(self, monkeypatch):
+        s = self._from_env(monkeypatch, CONVERSION_TIMEOUT="3600")
+        assert (s.document_timeout, s.lock_timeout) == (3480.0, 3540)
+
+    def test_stay_in_order_under_a_short_budget(self, monkeypatch):
+        s = self._from_env(monkeypatch, CONVERSION_TIMEOUT="60")
+        assert (s.document_timeout, s.lock_timeout) == (30.0, 45)
+
+    def test_explicit_values_win(self, monkeypatch):
+        s = self._from_env(monkeypatch, DOCUMENT_TIMEOUT="100", LOCK_TIMEOUT="200")
+        assert (s.document_timeout, s.lock_timeout) == (100.0, 200)
+
+    def test_batches_stay_opt_in(self, monkeypatch):
+        monkeypatch.delenv("BATCH_PAGE_SIZE", raising=False)
+        assert Settings.from_env().batch_page_size == 0

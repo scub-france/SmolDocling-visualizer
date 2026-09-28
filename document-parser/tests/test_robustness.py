@@ -176,7 +176,7 @@ class TestDocumentTimeout:
     def test_document_timeout_from_settings(self):
         conv = build_converter(ConversionOptions())
         opts = self._get_pipeline_options(conv)
-        assert opts.document_timeout == 120.0
+        assert opts.document_timeout == 780.0
 
     @patch("infra.local_converter.settings", Settings(document_timeout=45.0))
     def test_custom_document_timeout(self):
