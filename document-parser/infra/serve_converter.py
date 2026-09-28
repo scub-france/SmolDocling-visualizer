@@ -21,6 +21,7 @@ from pathlib import Path
 import httpx
 from docling_core.types.doc.base import BoundingBox, CoordOrigin
 
+from domain.services import merge_results
 from domain.value_objects import (
     DEFAULT_PAGE_HEIGHT,
     DEFAULT_PAGE_WIDTH,
@@ -90,6 +91,11 @@ class ServeConverter:
         if self._api_key:
             headers["X-Api-Key"] = self._api_key
         return headers
+
+    async def merge_batches(self, results: list[ConversionResult]) -> ConversionResult:
+        """Not reached while `supports_page_batching` is False: Docling Serve
+        converts the whole document in one call."""
+        return merge_results(results)
 
     async def convert(
         self,

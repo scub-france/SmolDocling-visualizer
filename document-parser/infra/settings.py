@@ -163,9 +163,9 @@ class Settings:
             max_file_size_mb=int(os.environ.get("MAX_FILE_SIZE_MB", "50")),
             rate_limit_rpm=int(os.environ.get("RATE_LIMIT_RPM", "100")),
             # 0 = batching disabled (matches dataclass default). Batching
-            # preserves memory on very large docs but `merge_results` drops
-            # `document_json`, which breaks the reasoning tunnel. Enable
-            # explicitly (e.g. 50+) for memory-bound deploys.
+            # preserves memory on very large docs and reports progress after
+            # each batch; the local converter merges the batch documents back
+            # into one (#344). Enable explicitly for memory-bound deploys.
             batch_page_size=int(os.environ.get("BATCH_PAGE_SIZE", "0")),
             opensearch_url=os.environ.get("OPENSEARCH_URL", ""),
             embedding_url=os.environ.get("EMBEDDING_URL", ""),

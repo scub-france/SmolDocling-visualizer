@@ -4,7 +4,9 @@ version = "0.0.0"
 description = "Docling Studio FastAPI backend"
 requires-python = ">=3.12"
 dependencies = [
-  "docling-core[chunking]>=2.0.0,<3.0.0",
+  # 2.65.2: `DoclingDocument.concatenate` (2.45) shifts the page numbers of
+  # every item, which the batch merge relies on (#344).
+  "docling-core[chunking]>=2.65.2,<3.0.0",
   "fastapi>=0.115.0,<1.0.0",
   "uvicorn[standard]>=0.32.0,<1.0.0",
   "python-multipart>=0.0.12,<1.0.0",

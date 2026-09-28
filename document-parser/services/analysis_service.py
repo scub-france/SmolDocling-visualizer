@@ -18,7 +18,7 @@ import pypdfium2 as pdfium
 
 from domain.exceptions import InvalidLifecycleTransitionError
 from domain.models import AnalysisJob, AnalysisStatus
-from domain.services import classify_error, merge_results
+from domain.services import classify_error
 from domain.value_objects import (
     ChunkingOptions,
     ChunkResult,
@@ -304,7 +304,7 @@ class AnalysisService:
                 job_id,
             )
 
-        return merge_results(results)
+        return await self._converter.merge_batches(results)
 
     def _on_task_done(self, task: asyncio.Task, *, job_id: str) -> None:
         """Cleanup running tasks and handle failures."""
@@ -406,9 +406,9 @@ class AnalysisService:
         """Run batched or single conversion. Returns None if the job was deleted mid-batch.
 
         Batching is only used for local mode — it limits memory usage when
-        Docling runs in-process.  In remote mode the Serve instance manages
-        its own resources, and batching would discard document_json (needed
-        for chunking).
+        Docling runs in-process, and reports progress after each batch. The
+        converter merges the batches back into one document (#344). In remote
+        mode the Serve instance manages its own resources.
         """
         total_pages = _count_pdf_pages(file_path)
         batch_size = self._config.batch_page_size

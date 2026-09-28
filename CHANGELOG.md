@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Changed
 
 - **Documentation rewritten** (#340): one short page per need (get started, user guide, configuration, troubleshooting, architecture, contributing, maintainers), checked against the 0.7.3 code, with small Mermaid diagrams. Duplicated and outdated pages are gone. Audit reports, design docs and demo scripts stay in the repo but are no longer published on the docs site.
+- **Long PDFs keep their structure when analysed in batches** (#344): with `BATCH_PAGE_SIZE` set (10 in Docker Compose), a PDF longer than one batch lost its Docling document, and with it the tree, the chunks, Ask and the JSON export. The local converter now concatenates the batch documents and rebuilds the page details from the merged one, so a batched analysis matches a single-pass one. The document workspace also shows the progress of a running analysis: percentage and pages done when it runs in batches, time elapsed otherwise. `docling-core` 2.65.2 or later is required.
 
 ### Deprecated
 

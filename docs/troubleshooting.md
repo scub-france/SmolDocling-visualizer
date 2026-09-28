@@ -17,12 +17,6 @@ The environment variables only give the starting values. After a **Save** in Set
 - Check that Ollama is running and that the model is pulled: `ollama list`.
 - In a container, `localhost` is the container itself. Use `http://host.docker.internal:11434` as the Ollama URL. On Linux, Ollama must listen on all interfaces and the container needs the `host-gateway` mapping: see [Enable Ask](getting-started.md#enable-ask).
 
-## A long PDF has an empty tree, and Ask cannot read it
-
-This happens with Docker Compose on PDFs of more than 10 pages. The compose file sets `BATCH_PAGE_SIZE=10`, and batched analyses lose the document structure.
-
-Put `BATCH_PAGE_SIZE=0` in `.env`, restart, and run a new analysis. Existing analyses stay as they are.
-
 ## The first analysis takes minutes
 
 Docling downloads its models from HuggingFace during the first analysis, with the published image too. Wait for it: the next analyses reuse them until the container is recreated. The server needs access to `huggingface.co` for this.

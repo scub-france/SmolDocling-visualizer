@@ -23,9 +23,10 @@ def extract_html_body(html: str) -> str:
 def merge_results(results: list[ConversionResult]) -> ConversionResult:
     """Merge multiple batch ConversionResults into a single consolidated result.
 
-    document_json is intentionally set to None: merging DoclingDocument's internal
-    tree structure across batches is error-prone. Re-chunking is disabled for
-    batched conversions (robustness decision for 0.3.1).
+    document_json is set to None: merging the Docling documents needs Docling,
+    which the domain does not import. The converter that batches merges them
+    (`DocumentConverter.merge_batches`, #344) and falls back to this merge when
+    it cannot, leaving an analysis without tree, chunks or Ask.
     """
     if not results:
         return ConversionResult(page_count=0, content_markdown="", content_html="", pages=[])

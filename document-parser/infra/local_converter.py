@@ -24,6 +24,7 @@ from docling.document_converter import PdfFormatOption
 from docling_core.types.doc import (
     CodeItem,
     DocItem,
+    DoclingDocument,
     FloatingItem,
     FormulaItem,
     GroupItem,
@@ -35,6 +36,7 @@ from docling_core.types.doc import (
     TitleItem,
 )
 
+from domain.services import merge_results
 from domain.value_objects import (
     DEFAULT_PAGE_HEIGHT,
     DEFAULT_PAGE_WIDTH,
@@ -133,9 +135,8 @@ def _select_converter(options: ConversionOptions) -> DoclingConverter:
 # ---------------------------------------------------------------------------
 
 
-def _extract_pages_detail(doc_result) -> tuple[list[PageDetail], int]:
+def _extract_pages_detail(document: DoclingDocument) -> tuple[list[PageDetail], int]:
     pages: dict[int, PageDetail] = {}
-    document = doc_result.document
     skipped = 0
 
     for page_key, page_obj in document.pages.items():
@@ -244,9 +245,13 @@ def _convert_sync(
     finally:
         _converter_lock.release()
 
-    doc = result.document
+    return _to_conversion_result(result.document)
+
+
+def _to_conversion_result(doc: DoclingDocument) -> ConversionResult:
+    """Everything the app stores about a conversion, derived from its document."""
     page_count = len(doc.pages)
-    pages_detail, skipped = _extract_pages_detail(result)
+    pages_detail, skipped = _extract_pages_detail(doc)
 
     if not pages_detail and page_count > 0:
         pages_detail = [
@@ -273,6 +278,31 @@ def _convert_sync(
     )
 
 
+def _merge_batches_sync(results: list[ConversionResult]) -> ConversionResult:
+    """Merge page batches into the result a single pass would have produced.
+
+    The batch documents are concatenated, then everything is derived from the
+    merged document again, page details included: concatenation renumbers the
+    refs of the second batch onwards (`#/texts/0` becomes `#/texts/<n>`), so
+    page details kept per batch would point at the wrong items of the tree.
+    When a batch has no document, or the concatenation fails, the merge falls
+    back to `merge_results`, which keeps no document.
+    """
+    document_jsons = [r.document_json for r in results]
+    if not all(document_jsons):
+        if results:
+            logger.warning("A batch has no Docling document, the merged analysis keeps none")
+        return merge_results(results)
+    try:
+        documents = [DoclingDocument.model_validate_json(j) for j in document_jsons if j]
+        return _to_conversion_result(DoclingDocument.concatenate(documents))
+    except Exception:
+        # Any failure of the third-party merge must not fail an analysis
+        # whose batches all converted: keep the merge without a document.
+        logger.warning("Could not merge the batch documents, keeping none", exc_info=True)
+        return merge_results(results)
+
+
 # ---------------------------------------------------------------------------
 # Public adapter class
 # ---------------------------------------------------------------------------
@@ -293,3 +323,6 @@ class LocalConverter:
         page_range: tuple[int, int] | None = None,
     ) -> ConversionResult:
         return await asyncio.to_thread(_convert_sync, file_path, options, page_range=page_range)
+
+    async def merge_batches(self, results: list[ConversionResult]) -> ConversionResult:
+        return await asyncio.to_thread(_merge_batches_sync, results)

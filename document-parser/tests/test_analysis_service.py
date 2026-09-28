@@ -314,8 +314,10 @@ class TestMergeResults:
 class TestBatchedConversion:
     @pytest.mark.asyncio
     async def test_batched_conversion_produces_merged_result(self):
-        """When batch_page_size is set and document exceeds it, results are merged."""
+        """When batch_page_size is set and document exceeds it, the converter
+        merges the batch results, in page order (#344)."""
         converter = AsyncMock()
+        converter.merge_batches.side_effect = merge_results
 
         # Simulate 2 batches: pages 1-5 and 6-8
         converter.convert.side_effect = [
@@ -354,8 +356,10 @@ class TestBatchedConversion:
         assert result is not None
         assert result.page_count == 8
         assert len(result.pages) == 8
-        assert result.document_json is None
         assert converter.convert.call_count == 2
+        converter.merge_batches.assert_awaited_once()
+        batches = converter.merge_batches.await_args.args[0]
+        assert [b.content_markdown for b in batches] == ["# Batch 1", "# Batch 2"]
 
         # Verify page_range was passed correctly
         call1_kwargs = converter.convert.call_args_list[0].kwargs
@@ -408,6 +412,7 @@ class TestBatchedConversion:
         from domain.models import AnalysisJob, AnalysisStatus
 
         converter = AsyncMock()
+        converter.merge_batches.side_effect = merge_results
         converter.convert.side_effect = [
             ConversionResult(
                 page_count=5,
