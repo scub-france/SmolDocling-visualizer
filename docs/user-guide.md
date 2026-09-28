@@ -44,13 +44,13 @@ Importing does not analyze the PDF. That is the next step.
 ## Run an analysis
 
 1. In **Docs**, click **Open visualization** on the document.
-2. Click **New analysis**. The button shows **Analyzing…** while Docling works.
+2. Click **New analysis**. While Docling works, a bar under the title shows how far it is: the percentage and the pages done for a long PDF, the time elapsed otherwise. When the analysis completes, its result opens by itself. If it fails, the reason shows next to the button.
 
 There are no options to choose here. The server settings apply: OCR on, table structure on, and the table mode set by the admin ("accurate" by default).
 
 ## Open the result
 
-Go to **Analyses** and click **Open visualization** on the row. The status must be `COMPLETED`.
+The result opens by itself at the end of **New analysis**. To open it later, go to **Analyses** and click **Open visualization** on the row. The status must be `COMPLETED`.
 
 The result page has three panels:
 
@@ -58,7 +58,7 @@ The result page has three panels:
 - **Preview** (center): the pages, with a colored box on each element. For documents with several pages, switch between **Page** and **Scroll** at the top.
 - **Properties** (right): the selected element. Its type, page and box position, then its text, or the table itself (**Open large** shows it bigger).
 
-The **LAYERS** bar above lists each element type with its count. Click a type to hide or show its boxes.
+The **LAYERS** bar above lists each element type with its count. Click a type to hide or show its boxes, or click **Hide boxes** to hide them all and see the bare page. **Show boxes** brings them back.
 
 ### Select an element
 
