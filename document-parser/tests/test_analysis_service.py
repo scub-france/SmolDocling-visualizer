@@ -660,3 +660,14 @@ class TestDeleteChunk:
 
         with pytest.raises(ValueError, match="No chunks available"):
             await service.delete_chunk("j1", 0)
+
+
+class TestFindAllSummaries:
+    async def test_reads_the_light_listing(self):
+        # #354 — polled while a batch runs, so it must not load the content.
+        analysis_repo = MagicMock()
+        analysis_repo.find_all_summaries = AsyncMock(return_value=["summary"])
+        service = _make_service(analysis_repo=analysis_repo)
+
+        assert await service.find_all_summaries() == ["summary"]
+        analysis_repo.find_all_summaries.assert_awaited_once()

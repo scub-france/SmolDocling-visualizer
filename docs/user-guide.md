@@ -26,7 +26,7 @@ flowchart LR
 | Item | What it is for |
 |------|----------------|
 | **Home** | Drop a PDF to import it. Shows counters and your 5 latest documents. |
-| **Docs** | Your PDFs: import, open, download, delete. |
+| **Docs** | Your PDFs: import, open, analyze several at once, download, delete. |
 | **Analyses** | Every analysis: open the result, delete. |
 | **Runs** | Nothing yet. The page says "Coming soon". |
 | **Settings** | Theme, language, and the setup for **Ask**. |
@@ -47,6 +47,13 @@ Importing does not analyze the PDF. That is the next step.
 2. Click **New analysis**. While Docling works, a bar under the title shows how far it is: the percentage and the pages done for a long PDF, the time elapsed otherwise. When the analysis completes, its result opens by itself. If it fails, the reason shows next to the button.
 
 There are no options to choose here. The server settings apply: OCR on, table structure on, and the table mode set by the admin ("accurate" by default).
+
+### Several documents at once
+
+1. In **Docs**, tick the documents to analyze. The box in the header ticks every listed document.
+2. Click **Analyze**. One analysis starts per document, and **Analyses** opens.
+
+Their status updates by itself until they end, with the percentage of long PDFs. The server runs three analyses at a time and queues the others. If some analyses cannot start, **Docs** stays open and lists them with the reason. They stay ticked, so you can try again.
 
 ## Open the result
 

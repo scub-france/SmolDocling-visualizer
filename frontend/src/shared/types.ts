@@ -74,6 +74,21 @@ export interface Analysis {
   createdAt: string
 }
 
+/** An analysis without its content, as `GET /api/analyses/summaries` lists it (#354). */
+export type AnalysisSummary = Pick<
+  Analysis,
+  | 'id'
+  | 'documentId'
+  | 'documentFilename'
+  | 'status'
+  | 'errorMessage'
+  | 'progressCurrent'
+  | 'progressTotal'
+  | 'startedAt'
+  | 'completedAt'
+  | 'createdAt'
+>
+
 export interface ChunkingOptions {
   chunker_type?: 'hybrid' | 'hierarchical'
   max_tokens?: number
