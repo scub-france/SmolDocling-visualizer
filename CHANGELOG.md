@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **Documentation rewritten** (#340): one short page per need (get started, user guide, configuration, troubleshooting, architecture, contributing, maintainers), checked against the 0.7.3 code, with small Mermaid diagrams. Duplicated and outdated pages are gone. Audit reports, design docs and demo scripts stay in the repo but are no longer published on the docs site.
 - **Long PDFs keep their structure when analysed in batches** (#344): with `BATCH_PAGE_SIZE` set (10 in Docker Compose), a PDF longer than one batch lost its Docling document, and with it the tree, the chunks, Ask and the JSON export. The local converter now concatenates the batch documents and rebuilds the page details from the merged one, so a batched analysis matches a single-pass one. The document workspace also shows the progress of a running analysis: percentage and pages done when it runs in batches, time elapsed otherwise. `docling-core` 2.65.2 or later is required.
 
+### Fixed
+
+- **Analyses no longer lose pages silently** (#348): when Docling hit its document timeout (`DOCUMENT_TIMEOUT`, 120 s by default), or could not read some pages, it returned a partial document, and the analysis showed as complete with those pages empty. On a laptop, a 28-page paper stopped after page 19. The analysis now fails with a message that names the missing pages, and says what to change when the timeout is the cause. This covers the local engine and Docling Serve, and batched analyses too.
+
 ### Deprecated
 
 - **Ingestion** (OpenSearch, Neo4j): deprecated, removed in 0.8.0. This covers sending chunks to OpenSearch or Neo4j, the embedding service, the stores, the chunk search, the Neo4j graph view, the `ingestion` and `graph` compose profiles and `docker-compose.ingestion.yml`. The documentation flags each of them.

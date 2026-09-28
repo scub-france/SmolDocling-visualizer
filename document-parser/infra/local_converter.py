@@ -13,7 +13,7 @@ import json
 import logging
 import threading
 
-from docling.datamodel.base_models import InputFormat
+from docling.datamodel.base_models import ConversionStatus, InputFormat
 from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
     TableFormerMode,
@@ -36,6 +36,7 @@ from docling_core.types.doc import (
     TitleItem,
 )
 
+from domain.exceptions import IncompleteConversionError
 from domain.services import merge_results
 from domain.value_objects import (
     DEFAULT_PAGE_HEIGHT,
@@ -245,7 +246,29 @@ def _convert_sync(
     finally:
         _converter_lock.release()
 
+    _raise_if_pages_missing(result)
     return _to_conversion_result(result.document)
+
+
+def _raise_if_pages_missing(result) -> None:
+    """Fail a partial conversion that dropped pages rather than store it (#348).
+
+    Docling raises on a failure only. On a partial success it keeps the pages
+    it processed in `result.pages` and records an error per page it dropped;
+    at its document timeout, it drops every page it had not reached.
+    """
+    if result.status != ConversionStatus.PARTIAL_SUCCESS:
+        return
+    first, last = result.input.limits.page_range
+    last = min(last, result.input.page_count)
+    converted = {page.page_no for page in result.pages}
+    missing = [page_no for page_no in range(first, last + 1) if page_no not in converted]
+    errors = [error.error_message for error in result.errors]
+    if not missing:
+        logger.warning("Partial conversion, every page converted: %s", errors)
+        return
+    timed_out = any("timeout" in error.lower() for error in errors)
+    raise IncompleteConversionError(missing, timed_out=timed_out)
 
 
 def _to_conversion_result(doc: DoclingDocument) -> ConversionResult:

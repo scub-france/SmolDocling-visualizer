@@ -16,11 +16,13 @@ import asyncio
 import json
 import logging
 import mimetypes
+import re
 from pathlib import Path
 
 import httpx
 from docling_core.types.doc.base import BoundingBox, CoordOrigin
 
+from domain.exceptions import IncompleteConversionError
 from domain.services import merge_results
 from domain.value_objects import (
     DEFAULT_PAGE_HEIGHT,
@@ -235,6 +237,7 @@ def _build_form_data(
 
 def _parse_response(data: dict) -> ConversionResult:
     """Parse Docling Serve v1 ConvertDocumentResponse into our domain ConversionResult."""
+    _raise_if_pages_missing(data)
     document = data.get("document", {})
 
     content_md = document.get("md_content") or ""
@@ -264,6 +267,31 @@ def _parse_response(data: dict) -> ConversionResult:
         pages=pages,
         document_json=document_json,
     )
+
+
+# Docling records one error per page it dropped: "Page 20: document timeout exceeded".
+_PAGE_ERROR_RE = re.compile(r"Page (\d+):")
+
+
+def _raise_if_pages_missing(data: dict) -> None:
+    """Fail a partial conversion that dropped pages, as the local engine does (#348).
+
+    Docling Serve passes on Docling's status and errors. Without "Page N:"
+    errors there is no telling which pages are missing, so the result is kept.
+    """
+    if data.get("status") != "partial_success":
+        return
+    messages = [
+        str(error.get("error_message", ""))
+        for error in data.get("errors") or []
+        if isinstance(error, dict)
+    ]
+    missing = [int(m.group(1)) for message in messages if (m := _PAGE_ERROR_RE.match(message))]
+    if not missing:
+        logger.warning("Partial conversion from Docling Serve, no page dropped: %s", messages)
+        return
+    timed_out = any("timeout" in message.lower() for message in messages)
+    raise IncompleteConversionError(missing, timed_out=timed_out)
 
 
 def _extract_pages_from_docling_document(doc: dict) -> list[PageDetail]:

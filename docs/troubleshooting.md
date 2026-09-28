@@ -21,6 +21,12 @@ The environment variables only give the starting values. After a **Save** in Set
 
 Docling downloads its models from HuggingFace during the first analysis, with the published image too. Wait for it: the next analyses reuse them until the container is recreated. The server needs access to `huggingface.co` for this.
 
+## An analysis fails with "Docling stopped at its document timeout"
+
+Docling gives a conversion `DOCUMENT_TIMEOUT` seconds (120 by default) and drops the pages it has not reached by then. Studio fails the analysis instead of keeping an incomplete one. Set `BATCH_PAGE_SIZE` (for example `10`) so that each batch of pages gets its own budget, or raise `DOCUMENT_TIMEOUT`, keeping `DOCUMENT_TIMEOUT` < `LOCK_TIMEOUT` < `CONVERSION_TIMEOUT`. See [Configuration](configuration.md).
+
+"Docling could not convert pages …" means the PDF is damaged on those pages. Export it again, or repair it, and analyse the new file.
+
 ## "File too large"
 
 The file is over `MAX_FILE_SIZE_MB` (50 MB by default). Raise it, and keep `NGINX_MAX_BODY_SIZE` above it. See [Limits](configuration.md#limits).
