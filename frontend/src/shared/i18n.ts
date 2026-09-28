@@ -432,6 +432,10 @@ const messages: Messages = {
     'parse.showAll': 'Tout afficher',
     'parse.showAllHint':
       'D\u00e9s\u00e9lectionne l\u2019\u00e9l\u00e9ment et remet toutes les bbox en surbrillance',
+    'layers.hideBoxes': 'Masquer les bo\u00eetes',
+    'layers.showBoxes': 'Afficher les bo\u00eetes',
+    'layers.hideBoxesHint': 'Masque toutes les bbox pour voir la page seule',
+    'layers.showBoxesHint': 'R\u00e9affiche toutes les bbox',
 
     // Chunk view (#264) \u2014 chunks aligned to the page preview
     'chunk.strategy': 'Strat\u00e9gie',
@@ -1053,6 +1057,10 @@ const messages: Messages = {
     'parse.collapseAll': 'Collapse all',
     'parse.showAll': 'Show all',
     'parse.showAllHint': 'Clear the selection and highlight every bbox again',
+    'layers.hideBoxes': 'Hide boxes',
+    'layers.showBoxes': 'Show boxes',
+    'layers.hideBoxesHint': 'Hide every bbox to see the bare page',
+    'layers.showBoxesHint': 'Show every bbox again',
 
     // Chunk view (#264) — chunks aligned to the page preview
     'chunk.strategy': 'Strategy',

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Added
 
 - **Parse view — Show all** (#338): selecting an element dims every other bbox, and nothing in the UI led back out. A **Show all** button in the LAYERS bar now clears the selection — tree row, Properties panel and Ask trace step — so every visible bbox is drawn at full strength with its label again. Hidden layers stay hidden, and the preview keeps its scroll position.
+- **Parse view — Hide boxes** (#343): seeing the bare page meant clicking every LAYERS chip, then clicking them all again to get the overlay back. A **Hide boxes** toggle left of the chips now hides every element type in one click, and **Show boxes** brings them all back. The toggle follows the chips, so hiding them all by hand flips it too. **Show all** (#338) still only clears the selection.
 
 ### Changed
 
