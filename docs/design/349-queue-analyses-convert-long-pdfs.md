@@ -64,7 +64,7 @@ Docling converts a document in one call, bounds memory with internal page batche
 - **The position in the queue, in the UI.** Docling Serve returns `task_position`, and the local queue could compute a rank. Follow-up issue once the queue is in.
 - **Cancelling an analysis.** Docling Serve has no abort API yet (`# TODO: abort task!` in `docling_serve/app.py`). Follow-up, once upstream offers one.
 - **Several local conversions at once.** Docling Serve's local engine runs several workers, each with its own models (`DOCLING_SERVE_ENG_LOC_NUM_WORKERS`). Studio keeps one in-process converter; scaling goes through the Serve engine.
-- **Recovering analyses cut by a restart.** Queued and running analyses live in memory. After a restart, their jobs stay `PENDING` or `RUNNING`. That is already true of running analyses today; separate issue.
+- **Recovering analyses cut by a restart.** Queued and running analyses live in memory. After a restart, their jobs stay `PENDING` or `RUNNING`. That is already true of running analyses today; separate issue: #358.
 - **Removing `BATCH_PAGE_SIZE` and the batch merge (#344).** Both stay, as an opt-in for memory-bound local setups.
 
 ## 4. Context & constraints
@@ -291,7 +291,7 @@ No change.
 |------|-----------------|------------|--------|---------------|------------------------|
 | Docling Serve keeps converting after Studio gave up (no abort API) | Performance | Medium | Low | Serve logs and CPU | `document_timeout` is now sent, so Serve stops at the same budget. Abort is a non-goal until upstream ships it. |
 | The single-use result is lost if its one fetch fails | Tests | Low | Medium | Analysis `FAILED`, "result not found" | The long-poll fetches right after completion, and one retry covers a transient network error. |
-| Queued analyses stay `PENDING` for good after a restart (in-memory queue) | Tests | Medium | Medium | `PENDING` rows that never move | Already true of running analyses. Follow-up issue to mark interrupted jobs `FAILED` at startup. |
+| Queued analyses stay `PENDING` for good after a restart (in-memory queue) | Tests | Medium | Medium | `PENDING` rows that never move | Already true of running analyses. Follow-up #358 marks interrupted jobs `FAILED` at startup. |
 | With a queue of one, a long analysis holds up short ones | Performance | Medium | Low | Long `PENDING` times in the library | That is the engine's real capacity. The Serve engine scales; the queue position is a follow-up. |
 | Derived timeout defaults surprise a deployment that sets only one of the three | Documentation | Low | Low | The cascade check stops the server at startup | Its error names the three values, and `configuration.md` documents the derivation. |
 | A new port property ties the service to engine capabilities | Hexagonal Architecture | Low | Low | Architecture tests | A read-only capability on the port, implemented by both adapters; no adapter import in services. |
@@ -352,7 +352,7 @@ None: both engines move together. `BATCH_PAGE_SIZE` keeps its opt-in role.
 
 Resolved at acceptance:
 
-- Analyses cut by a restart: marked `FAILED` at startup in a follow-up issue, not here.
+- Analyses cut by a restart: marked `FAILED` at startup in a follow-up issue (#358), not here.
 - Docling Serve's long-poll `wait`: 5 s.
 - "No Studio-side page progress": no ADR. The decision is recorded in §3 and §6 E, and follows from the libraries.
 
@@ -360,6 +360,7 @@ Resolved at acceptance:
 
 - **Issue:** https://github.com/scub-france/docling-Studio/issues/349
 - **Related PRs / commits:** #351 (this rework), #347 (batch merge, #344), #350 (incomplete conversions, #348), #355 (batch analysis, #354)
+- **Follow-up issues:** #358 (analyses cut by a restart)
 - **ADRs:** none planned
 - **Project docs:**
   - Architecture: `docs/architecture.md`
