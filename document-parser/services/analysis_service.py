@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 
 import pypdfium2 as pdfium
 
-from domain.exceptions import InvalidLifecycleTransitionError
+from domain.exceptions import IncompleteConversionError, InvalidLifecycleTransitionError
 from domain.models import AnalysisJob, AnalysisStatus
 from domain.services import classify_error
 from domain.value_objects import (
@@ -292,6 +292,9 @@ class AnalysisService:
                     self._converter.convert(file_path, options, page_range=(start, end)),
                     timeout=self._conversion_timeout,
                 )
+            except IncompleteConversionError:
+                # Already names the missing pages, in absolute numbers (#348).
+                raise
             except Exception as exc:
                 raise RuntimeError(
                     f"Batch {batch_idx + 1}/{num_batches} (pages {start}-{end}) failed: {exc}"

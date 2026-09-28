@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from domain.exceptions import IncompleteConversionError
 from domain.value_objects import ConversionResult, PageDetail
 
 # Regex to extract <body> content from Docling's well-formed HTML output.
@@ -59,6 +60,11 @@ def merge_results(results: list[ConversionResult]) -> ConversionResult:
 
 def classify_error(exc: Exception) -> str:
     """Return a user-friendly error message based on the exception type/content."""
+    if isinstance(exc, IncompleteConversionError):
+        # Already written for the user, and it names the missing pages: the
+        # generic "timeout" rule below would drop them.
+        return str(exc)
+
     msg = str(exc).lower()
 
     if "invalidcxxcompiler" in msg or "no working c++ compiler" in msg:
