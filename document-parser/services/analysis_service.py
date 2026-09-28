@@ -55,6 +55,15 @@ def _chunk_to_dict(c: ChunkResult) -> dict:
 _DEFAULT_MAX_CONCURRENT = 3
 
 
+def _engine_capacity(converter: DocumentConverter, max_concurrent: int) -> int:
+    """How many analyses may convert at once: the setting, capped by what the
+    engine runs in parallel when it says so (#349)."""
+    limit = getattr(converter, "max_parallel_conversions", None)
+    if isinstance(limit, int) and limit >= 1:
+        return min(max_concurrent, limit)
+    return max_concurrent
+
+
 def _count_pdf_pages(file_path: str) -> int:
     """Count pages in a PDF. Returns 0 if the file is not a valid PDF."""
     try:
@@ -95,7 +104,10 @@ class AnalysisService:
         self._analysis_repo = analysis_repo
         self._document_repo = document_repo
         self._conversion_timeout = conversion_timeout
-        self._semaphore = asyncio.Semaphore(max_concurrent)
+        # #349 — never hand the engine more conversions than it runs at once:
+        # the others wait PENDING here, in order, instead of failing inside it.
+        self._capacity = _engine_capacity(converter, max_concurrent)
+        self._semaphore = asyncio.Semaphore(self._capacity)
         self._running_tasks: dict[str, asyncio.Task] = {}
         self._background_tasks: set[asyncio.Task] = set()
         self._config = config or AnalysisConfig()
@@ -385,6 +397,10 @@ class AnalysisService:
         Acquires the concurrency semaphore to limit parallel conversions
         and prevent CPU/memory exhaustion on modest hardware.
         """
+        if self._semaphore.locked():
+            logger.info(
+                "Analysis queued: %s (the engine runs %d at a time)", job_id, self._capacity
+            )
         async with self._semaphore:
             await self._run_analysis_inner(
                 job_id, file_path, filename, pipeline_options, chunking_options

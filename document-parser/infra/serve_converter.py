@@ -76,6 +76,9 @@ class ServeConverter:
     # the orchestrator passes the full document through in a single call.
     supports_page_batching: bool = False
 
+    # Docling Serve queues what its workers cannot take yet (#349).
+    max_parallel_conversions: int | None = None
+
     def __init__(
         self,
         base_url: str,
