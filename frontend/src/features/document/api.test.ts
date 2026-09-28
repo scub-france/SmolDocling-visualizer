@@ -8,6 +8,7 @@ import {
   getExportUrl,
   rechunkDocument,
   fetchDocumentTree,
+  fetchDocumentPages,
 } from './api'
 
 vi.mock('../../shared/api/http', () => ({
@@ -39,6 +40,21 @@ describe('document API', () => {
 
     expect(apiFetch).toHaveBeenCalledWith('/api/documents/42')
     expect(result).toEqual(doc)
+  })
+
+  it('fetchDocumentPages maps the page sizes to pages without elements (#352)', async () => {
+    apiFetch.mockResolvedValue([
+      { pageNumber: 1, width: 612, height: 792 },
+      { pageNumber: 2, width: 842, height: 595 },
+    ])
+
+    const result = await fetchDocumentPages('42')
+
+    expect(apiFetch).toHaveBeenCalledWith('/api/documents/42/pages')
+    expect(result).toEqual([
+      { page_number: 1, width: 612, height: 792, elements: [] },
+      { page_number: 2, width: 842, height: 595, elements: [] },
+    ])
   })
 
   it('uploadDocument sends file via FormData with skipContentType', async () => {

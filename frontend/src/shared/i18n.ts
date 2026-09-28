@@ -391,6 +391,7 @@ const messages: Messages = {
     // in #264, Compare slot replaced by Ingest in #225)
     'workspace.tabs.parse': 'Parse',
     'workspace.backToLibrary': 'Retour \u00e0 la biblioth\u00e8que',
+    'workspace.previewUnavailable': 'Aper\u00e7u indisponible : le PDF ne peut pas \u00eatre lu.',
     'workspace.modeDisabled': 'Mode d\u00e9sactiv\u00e9 pour ce d\u00e9ploiement',
 
     // Parse view (#264) \u2014 Docling extraction graph
@@ -1020,6 +1021,7 @@ const messages: Messages = {
     // in #264, Compare slot replaced by Ingest in #225)
     'workspace.tabs.parse': 'Parse',
     'workspace.backToLibrary': 'Back to library',
+    'workspace.previewUnavailable': 'Preview unavailable: the PDF cannot be read.',
     'workspace.modeDisabled': 'Mode disabled for this deployment',
 
     // Parse view (#264) — Docling extraction graph
