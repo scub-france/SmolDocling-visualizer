@@ -18,14 +18,25 @@ Issue titles start with a tag matching the type: `[BUG]`, `[FEATURE]`, `[ENHANCE
 ## Triage a new issue
 
 ```mermaid
-flowchart TD
-    New[New issue] --> Dup{Already reported?}
-    Dup -->|yes| D[Label duplicate, link the original, close]
-    Dup -->|no| Scope{In scope?}
-    Scope -->|no| W[Label wontfix, explain, close]
-    Scope -->|yes| Info{Enough information?}
-    Info -->|no| Ask[Ask in a comment]
-    Info -->|yes| Tag[Type + area + priority, then a milestone]
+flowchart LR
+    New(["New issue"]) --> Dup{"Already<br/>reported?"}
+    Dup -->|yes| D("Label duplicate,<br/>link the original, close")
+    Dup -->|no| Scope{"In scope?"}
+    Scope -->|no| W("Label wontfix,<br/>explain, close")
+    Scope -->|yes| Info{"Enough<br/>information?"}
+    Info -->|no| Ask("Ask in a comment")
+    Info -->|yes| Tag("Type + area + priority,<br/>then a milestone")
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef amber fill:#FFB3001F,stroke:#FFB300,stroke-width:1.5px
+    classDef red fill:#E539351F,stroke:#E53935,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    class New grey
+    class Dup,Scope,Info amber
+    class D,W red
+    class Ask blue
+    class Tag green
 ```
 
 - Easy and well described? Add `good first issue`.

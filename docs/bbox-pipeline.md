@@ -4,9 +4,16 @@ How a box found by Docling becomes a rectangle drawn over the page preview.
 
 ```mermaid
 flowchart LR
-    A["Docling box<br/>PDF points<br/>top-left or bottom-left origin"] -->|"to_topleft_list()"| B["Backend box<br/>PDF points<br/>top-left origin"]
-    B -->|"computeScale()<br/>bboxToRect()"| C["Rectangle<br/>CSS pixels"]
-    C -->|"BboxCanvas.vue"| D["Canvas over<br/>the page image"]
+    A("Docling box<br/>PDF points<br/>top-left or bottom-left origin") -->|"to_topleft_list()"| B("Backend box<br/>PDF points<br/>top-left origin")
+    B -->|"computeScale()<br/>bboxToRect()"| C("Rectangle<br/>CSS pixels")
+    C -->|"BboxCanvas.vue"| D("Canvas over<br/>the page image")
+
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class A blue
+    class B,C orange
+    class D teal
 ```
 
 ## Coordinate spaces

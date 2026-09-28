@@ -4,10 +4,19 @@ Docling Studio is a web app to see what [Docling](https://github.com/docling-pro
 
 ```mermaid
 flowchart LR
-    PDF[Your PDF] --> Docling[Docling analysis]
-    Docling --> View[Boxes on the page + document tree]
-    View --> Ask[Ask a question]
-    View --> Export[Markdown or Docling JSON]
+    PDF(["Your PDF"]) --> Docling("Docling analysis")
+    Docling --> View("Boxes on the page<br/>+ document tree")
+    View --> Ask("Ask a question")
+    View --> Export("Markdown or<br/>Docling JSON")
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class PDF grey
+    class Docling blue
+    class View orange
+    class Ask,Export teal
 ```
 
 Try it with one command:

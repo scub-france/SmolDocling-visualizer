@@ -55,12 +55,23 @@ At least one of the two must be `true`.
 
 ```mermaid
 flowchart LR
-    Parser[document-parser]
-    Parser -.->|remote engine| Serve[Docling Serve]
-    Parser -.->|Ask| Ollama
-    Parser -.->|ingestion, deprecated| Embedding[Embedding service]
-    Parser -.->|ingestion, deprecated| OpenSearch
-    Parser -.->|ingestion, deprecated| Neo4j
+    Parser("document-parser") -.->|remote engine| Serve("Docling Serve")
+    Parser -.->|Ask| Ollama("Ollama")
+    subgraph Ingestion ["Ingestion · deprecated, removed in 0.8.0"]
+        direction TB
+        Embedding("Embedding service")
+        OpenSearch[("OpenSearch")]
+        Neo4j[("Neo4j")]
+    end
+    Parser -.-> Ingestion
+
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef deprecated fill:#9E9E9E0D,stroke:#9E9E9E,stroke-width:1.5px,stroke-dasharray:5 4,color:#9E9E9E
+    class Parser orange
+    class Serve,Ollama blue
+    class Embedding,OpenSearch,Neo4j deprecated
+    style Ingestion fill:#9E9E9E0D,stroke:#9E9E9E,stroke-width:1px,stroke-dasharray:4 4,color:#9E9E9E
 ```
 
 None of them is needed to import and analyze PDFs.

@@ -3,17 +3,31 @@
 ## The big picture
 
 ```mermaid
-flowchart LR
-    Browser --> Front["Frontend: Vue 3, served by nginx"]
-    Front -->|/api| Back["Backend: FastAPI"]
-    Back --> DB[("SQLite + uploaded PDFs")]
-    Back --> Docling["Docling, in the backend"]
-    Back -.-> Serve["Docling Serve (remote engine)"]
-    Back -.-> Ollama["Ollama (Ask)"]
-    Back -.-> Stores["OpenSearch, Neo4j (ingestion, deprecated)"]
+flowchart TB
+    subgraph Studio ["Docling Studio"]
+        Front("Frontend<br/>Vue 3, served by nginx") -->|/api| Back("Backend<br/>FastAPI")
+        Back --> DB[("SQLite<br/>+ uploaded PDFs")]
+        Back --> Docling("Docling<br/>in the backend")
+    end
+    Browser(["Browser"]) --> Front
+    Back -.-> Serve("Docling Serve<br/>remote engine")
+    Back -.-> Ollama("Ollama<br/>for Ask")
+    Back -.-> Stores[("OpenSearch, Neo4j<br/>ingestion, deprecated")]
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    classDef deprecated fill:#9E9E9E0D,stroke:#9E9E9E,stroke-width:1.5px,stroke-dasharray:5 4,color:#9E9E9E
+    class Browser grey
+    class Front,Back orange
+    class Docling,Serve,Ollama blue
+    class DB teal
+    class Stores deprecated
+    style Studio fill:#FF57220A,stroke:#FF572266,stroke-width:1px,stroke-dasharray:4 4
 ```
 
-Dotted lines are optional. Ingestion (OpenSearch, Neo4j) is deprecated and goes away in 0.8.0. The published image puts nginx and the backend in one container (root `Dockerfile`). Docker Compose runs them as two containers.
+Dotted lines are optional. Grey and dashed means deprecated: ingestion (OpenSearch, Neo4j) goes away in 0.8.0. The published image puts nginx and the backend in one container (root `Dockerfile`). Docker Compose runs them as two containers.
 
 | Folder | Content |
 |--------|---------|
@@ -30,11 +44,20 @@ The backend follows ports and adapters. The core (`domain/`) defines what the ap
 
 ```mermaid
 flowchart TB
-    API["api/ : HTTP routes"] --> Services["services/ : use cases"]
-    Services --> Domain["domain/ : models, rules, ports"]
-    Infra["infra/ : Docling, Ollama, OpenSearch, Neo4j..."] -.->|implements| Domain
-    Persistence["persistence/ : SQLite"] -.->|implements| Domain
-    Bootstrap["bootstrap/ : builds everything at start"] --> API
+    Bootstrap("bootstrap/<br/>builds everything at start") --> API("api/<br/>HTTP routes")
+    API --> Services("services/<br/>use cases")
+    Services --> Domain{{"domain/<br/>models, rules, ports"}}
+    Infra("infra/<br/>Docling, Ollama, OpenSearch, Neo4j…") -.->|implements| Domain
+    Persistence("persistence/<br/>SQLite") -.->|implements| Domain
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class Bootstrap grey
+    class API,Services blue
+    class Domain orange
+    class Infra,Persistence teal
 ```
 
 `tests/test_architecture.py` fails when a layer imports what it must not:
@@ -67,11 +90,23 @@ flowchart TB
 
 ```mermaid
 stateDiagram-v2
+    direction LR
     [*] --> PENDING
     PENDING --> RUNNING
     PENDING --> FAILED
     RUNNING --> COMPLETED
     RUNNING --> FAILED
+    COMPLETED --> [*]
+    FAILED --> [*]
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    classDef red fill:#E539351F,stroke:#E53935,stroke-width:1.5px
+    class PENDING grey
+    class RUNNING blue
+    class COMPLETED green
+    class FAILED red
 ```
 
 An analysis waits in `PENDING` until one of the `MAX_CONCURRENT_ANALYSES` slots is free. The result is stored in SQLite: Markdown and HTML, the pages with their boxes, and the full Docling document as JSON.

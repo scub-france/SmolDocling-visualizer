@@ -6,11 +6,19 @@ The interface starts in French. To switch to English, open **Paramètres** and s
 
 ```mermaid
 flowchart LR
-    A[Import a PDF] --> B[Run an analysis]
-    B --> C[Open the result]
-    C --> D[Check the boxes and the text]
-    C --> E[Ask a question]
-    C --> F[Download Markdown or JSON]
+    A(["Import a PDF"]) --> B("Run an analysis") --> C("Open the result")
+    C --> D("Check the boxes<br/>and the text")
+    C --> E("Ask a question")
+    C --> F("Download Markdown<br/>or JSON")
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef blue fill:#2196F31F,stroke:#2196F3,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class A grey
+    class B blue
+    class C orange
+    class D,E,F teal
 ```
 
 ## The sidebar

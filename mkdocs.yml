@@ -43,6 +43,9 @@ nav:
       - Bounding boxes: bbox-pipeline.md
   - Maintain: maintainers.md
 
+extra_css:
+  - stylesheets/extra.css
+
 # Kept in the repo for maintainers and tooling, not published on the site.
 exclude_docs: |
   audit/reports/

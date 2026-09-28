@@ -4,11 +4,18 @@
 
 ```mermaid
 flowchart LR
-    Freeze["Freeze commit on release/x.y.z"] --> PR["Pull request to main"]
-    PR -->|release gate says GO| Merge["Rebase and merge"]
-    Merge --> Tag["Tag vX.Y.Z"]
-    Tag --> Images["Images pushed to ghcr.io"]
-    Images --> Deploy["GitHub Release, then deploy"]
+    Freeze("Freeze commit<br/>on release/x.y.z") --> PR("Pull request<br/>to main")
+    PR -->|release gate<br/>says GO| Merge("Rebase<br/>and merge")
+    Merge --> Tag("Tag<br/>vX.Y.Z")
+    Tag --> Images("Images pushed<br/>to ghcr.io")
+    Images --> Deploy(["GitHub Release,<br/>then deploy"])
+
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    class Freeze,PR,Merge orange
+    class Tag,Images teal
+    class Deploy green
 ```
 
 1. **Audit.** Run the [quality audit](audit/master.md) on the release branch and fix what blocks.

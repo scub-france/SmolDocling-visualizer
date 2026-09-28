@@ -58,9 +58,19 @@ Open <http://localhost:3000>. Two containers run:
 
 ```mermaid
 flowchart LR
-    Browser -->|port 3000| Frontend["frontend (nginx)"]
-    Frontend -->|/api| Parser["document-parser (FastAPI + Docling)"]
-    Parser --> Data[("SQLite + uploaded PDFs")]
+    subgraph Compose ["Docker Compose"]
+        Frontend("frontend<br/>nginx") -->|/api| Parser("document-parser<br/>FastAPI + Docling")
+        Parser --> Data[("SQLite<br/>+ uploaded PDFs")]
+    end
+    Browser(["Browser"]) -->|port 3000| Frontend
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef teal fill:#0096881F,stroke:#009688,stroke-width:1.5px
+    class Browser grey
+    class Frontend,Parser orange
+    class Data teal
+    style Compose fill:#FF57220A,stroke:#FF572266,stroke-width:1px,stroke-dasharray:4 4
 ```
 
 Two things to know before your first analysis:

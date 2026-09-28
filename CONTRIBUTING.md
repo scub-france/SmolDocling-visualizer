@@ -4,10 +4,17 @@
 
 ```mermaid
 flowchart LR
-    Issue --> Branch["Branch from release/x.y.z"]
-    Branch --> PR["Pull request to release/x.y.z"]
-    PR --> Release["release/x.y.z"]
-    Release -->|release PR, then tag vX.Y.Z| Main[main]
+    Issue(["Issue"]) --> Branch("Branch from<br/>release/x.y.z")
+    Branch --> PR("Pull request to<br/>release/x.y.z")
+    PR --> Release("release/x.y.z")
+    Release -->|release PR,<br/>then tag vX.Y.Z| Main(["main"])
+
+    classDef grey fill:#607D8B1F,stroke:#607D8B,stroke-width:1.5px
+    classDef orange fill:#FF57221F,stroke:#FF5722,stroke-width:2px
+    classDef green fill:#43A0471F,stroke:#43A047,stroke-width:1.5px
+    class Issue grey
+    class Branch,PR,Release orange
+    class Main green
 ```
 
 - Every change starts from a GitHub issue.
