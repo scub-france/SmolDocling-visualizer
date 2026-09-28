@@ -12,14 +12,19 @@ The server checks most values when it starts. If one is invalid, it does not sta
 | Variable | Default | What it does |
 |----------|---------|--------------|
 | `CONVERSION_ENGINE` | `local` | `local`: Docling runs in the backend. `remote`: PDFs go to Docling Serve. The `-local` and `-remote` images set it for you. |
-| `DOCLING_SERVE_URL` | `http://localhost:5001` | Docling Serve address. Remote engine only. |
+| `DOCLING_SERVE_URL` | `http://localhost:5001` | Docling Serve address. Remote engine only. Studio uses its asynchronous API (`/v1/convert/file/async`), which the v1.21.0 of the compose file has. |
 | `DOCLING_SERVE_API_KEY` | empty | Key sent to Docling Serve, if it needs one. |
 | `DEFAULT_TABLE_MODE` | `accurate` | How tables are read: `accurate` or `fast`. |
-| `MAX_CONCURRENT_ANALYSES` | `3` | How many analyses run at the same time. |
-| `CONVERSION_TIMEOUT` | `900` | Seconds before an analysis is stopped. |
-| `BATCH_PAGE_SIZE` | `0` (compose: `10`) | Local engine only. Converts long PDFs in batches of this many pages, which bounds memory use and shows the progress after each batch. A table that runs across two batches comes out as two tables. `0` converts in one pass. |
+| `MAX_CONCURRENT_ANALYSES` | `3` | How many analyses convert at the same time. The local engine converts one PDF at a time whatever the value. The other analyses wait for their turn as `PENDING`. |
+| `CONVERSION_TIMEOUT` | `900` | Seconds an analysis may run, from the moment it leaves the queue, before it is stopped. |
+| `BATCH_PAGE_SIZE` | `0` | Local engine only. `0`: Docling converts the whole PDF in one go, as Docling Serve does. Another value splits long PDFs into batches of that many pages, to bound memory use. The batches also show the progress, but a table that runs across two batches comes out as two tables. |
 
-Two more timeouts exist, in seconds: `DOCUMENT_TIMEOUT` (120) and `LOCK_TIMEOUT` (300). The server only starts if `DOCUMENT_TIMEOUT` < `LOCK_TIMEOUT` < `CONVERSION_TIMEOUT`. So a `CONVERSION_TIMEOUT` of 300 or less needs a lower `LOCK_TIMEOUT` as well.
+Two more timeouts exist, in seconds:
+
+- `DOCUMENT_TIMEOUT`: when Docling itself stops a conversion. It is also sent to Docling Serve. Default: two minutes less than `CONVERSION_TIMEOUT` (780).
+- `LOCK_TIMEOUT`: how long a local conversion waits for the previous one to release the converter. Default: one minute less than `CONVERSION_TIMEOUT` (840).
+
+Under a 4-minute `CONVERSION_TIMEOUT`, those defaults become a half and three quarters of it. The server only starts if `DOCUMENT_TIMEOUT` < `LOCK_TIMEOUT` < `CONVERSION_TIMEOUT`.
 
 ## Limits
 

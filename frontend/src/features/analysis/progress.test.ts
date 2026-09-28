@@ -7,6 +7,7 @@ const at = (seconds: number) => Date.parse(STARTED) + seconds * 1000
 
 function run(overrides: Partial<Parameters<typeof analysisProgress>[0]> = {}) {
   return {
+    status: 'RUNNING' as const,
     progressCurrent: null,
     progressTotal: null,
     startedAt: STARTED,
@@ -43,10 +44,16 @@ describe('analysisProgress', () => {
     expect(analysisProgress(run(), at(83))).toEqual({ kind: 'elapsed', seconds: 83 })
   })
 
-  it('counts from the creation while the analysis waits for a slot', () => {
+  it('counts from the creation when the start time is not known yet', () => {
     expect(analysisProgress(run({ startedAt: null }), at(0))).toEqual({
       kind: 'elapsed',
       seconds: 2,
+    })
+  })
+
+  it('shows an analysis waiting for its turn as queued (#349)', () => {
+    expect(analysisProgress(run({ status: 'PENDING', startedAt: null }), at(40))).toEqual({
+      kind: 'queued',
     })
   })
 

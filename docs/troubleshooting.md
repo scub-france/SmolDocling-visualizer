@@ -29,6 +29,14 @@ The file is over `MAX_FILE_SIZE_MB` (50 MB by default). Raise it, and keep `NGIN
 
 More than `RATE_LIMIT_RPM` requests in a minute (100 by default). Behind the bundled nginx, all users share this one limit. Raise it, or set `0` to turn it off.
 
+## An analysis stays `PENDING`
+
+It waits for its turn. The local engine converts one PDF at a time, and Docling Serve works through its own queue. The analysis starts when the ones before it end; the document page shows **Queued** meanwhile. There is nothing to do.
+
+## An analysis fails with "Server busy"
+
+A previous conversion was still finishing after its own analysis gave up at `CONVERSION_TIMEOUT`, and it did not release the local converter within `LOCK_TIMEOUT`. For long PDFs, raise `CONVERSION_TIMEOUT`, or use the remote engine. See [Configuration](configuration.md#analysis).
+
 ## My documents are gone
 
 `docker run` keeps the data inside the container: a restart keeps it, but removing the container or starting a new one from the image loses it. Mount volumes for `/app/data` and `/app/uploads`: see [Keep your data](getting-started.md#keep-your-data).

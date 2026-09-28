@@ -315,6 +315,10 @@ class LocalConverter:
     # and merge results (cf. AnalysisService._run_batched_conversion).
     supports_page_batching: bool = True
 
+    # One in-process converter, its models loaded once: one conversion at a
+    # time. Further analyses wait PENDING in the service's queue (#349).
+    max_parallel_conversions: int | None = 1
+
     async def convert(
         self,
         file_path: str,

@@ -69,6 +69,15 @@ class TestBuildFormData:
         data = _build_form_data(ConversionOptions())
         assert "page_range" not in data
 
+    def test_document_timeout_sent_when_set(self):
+        # #349 — Docling Serve stops at the same budget as the local engine.
+        data = _build_form_data(ConversionOptions(), document_timeout=780.0)
+        assert data["document_timeout"] == "780.0"
+
+    def test_document_timeout_absent_when_none(self):
+        data = _build_form_data(ConversionOptions())
+        assert "document_timeout" not in data
+
 
 # ---------------------------------------------------------------------------
 # Unit tests — response parsing
@@ -539,6 +548,25 @@ class TestServeConverter:
 # ---------------------------------------------------------------------------
 
 
+def _task_client(result: dict) -> AsyncMock:
+    """A mocked httpx.AsyncClient scripted for one Docling Serve task: submitted,
+    succeeded at the first poll, then its result fetched (#349)."""
+
+    def response(payload: dict) -> MagicMock:
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = payload
+        resp.raise_for_status = MagicMock()
+        return resp
+
+    client = AsyncMock()
+    client.post = AsyncMock(return_value=response({"task_id": "t-1", "task_status": "pending"}))
+    client.get = AsyncMock(side_effect=[response({"task_status": "success"}), response(result)])
+    client.__aenter__ = AsyncMock(return_value=client)
+    client.__aexit__ = AsyncMock(return_value=False)
+    return client
+
+
 class TestServeConverterConvert:
     @pytest.mark.asyncio
     async def test_successful_conversion(self, tmp_path):
@@ -575,17 +603,10 @@ class TestServeConverterConvert:
             }
         }
 
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = serve_response
-        mock_response.raise_for_status = MagicMock()
-
-        mock_client = AsyncMock()
-        mock_client.post.return_value = mock_response
-        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-        mock_client.__aexit__ = AsyncMock(return_value=False)
-
-        conv = ServeConverter(base_url="http://localhost:5001", api_key="test-key")
+        mock_client = _task_client(serve_response)
+        conv = ServeConverter(
+            base_url="http://localhost:5001", api_key="test-key", document_timeout=780.0
+        )
 
         with patch("infra.serve_converter.httpx.AsyncClient", return_value=mock_client):
             result = await conv.convert(str(test_file), ConversionOptions())
@@ -596,12 +617,19 @@ class TestServeConverterConvert:
         assert len(result.pages[0].elements) == 1
         assert result.pages[0].elements[0].type == "title"
 
+        # #349 — submitted to the asynchronous route, followed, then fetched.
+        assert mock_client.post.await_args.args[0] == "http://localhost:5001/v1/convert/file/async"
+        assert [c.args[0] for c in mock_client.get.await_args_list] == [
+            "http://localhost:5001/v1/status/poll/t-1",
+            "http://localhost:5001/v1/result/t-1",
+        ]
+
         # Verify form fields sent correctly
-        call_kwargs = mock_client.post.call_args
-        sent_data = call_kwargs.kwargs.get("data", {})
+        sent_data = mock_client.post.await_args.kwargs["data"]
         assert sent_data["do_ocr"] == "true"
         assert set(sent_data["to_formats"]) == {"md", "html", "json"}
         assert "generate_page_images" not in sent_data
+        assert sent_data["document_timeout"] == "780.0"
 
     @pytest.mark.asyncio
     async def test_http_error_raises(self, tmp_path):
@@ -659,131 +687,6 @@ class TestServeConverterConvert:
 
 
 # ---------------------------------------------------------------------------
-# Startup-race retry — absorbs docling-serve 404 while the converter
-# pipeline is finishing its lifespan init (route is registered, handler
-# returns 404 briefly). See module-level note in serve_converter.py.
-# ---------------------------------------------------------------------------
-
-
-class TestServeConverterStartupRetry:
-    @staticmethod
-    def _stub_client_with_responses(*status_codes):
-        """Build a mocked httpx.AsyncClient that returns the given codes in order.
-
-        Each entry triggers one `client.post(...)` call. The 200-coded responses
-        carry a minimal valid Docling Serve payload so the downstream parser
-        doesn't blow up.
-        """
-        responses = []
-        for code in status_codes:
-            resp = MagicMock()
-            resp.status_code = code
-            resp.text = f"stub {code}"
-            if code == 200:
-                resp.json.return_value = {
-                    "document": {
-                        "md_content": "ok",
-                        "html_content": "<p>ok</p>",
-                        "json_content": {"pages": {}, "texts": [], "tables": [], "pictures": []},
-                    }
-                }
-                resp.raise_for_status = MagicMock()
-            else:
-                resp.raise_for_status = MagicMock(
-                    side_effect=httpx.HTTPStatusError(f"{code}", request=MagicMock(), response=resp)
-                )
-            responses.append(resp)
-
-        client = AsyncMock()
-        client.post = AsyncMock(side_effect=responses)
-        client.__aenter__ = AsyncMock(return_value=client)
-        client.__aexit__ = AsyncMock(return_value=False)
-        return client, responses
-
-    @pytest.mark.asyncio
-    async def test_no_retry_on_first_success(self, tmp_path):
-        """200 on the first POST → no retry, no sleep."""
-        test_file = tmp_path / "test.pdf"
-        test_file.write_bytes(b"%PDF-1.4 stub")
-
-        client, _ = self._stub_client_with_responses(200)
-        conv = ServeConverter(base_url="http://localhost:5001")
-
-        with (
-            patch("infra.serve_converter.httpx.AsyncClient", return_value=client),
-            patch("infra.serve_converter.asyncio.sleep", new=AsyncMock()) as sleep_mock,
-        ):
-            result = await conv.convert(str(test_file), ConversionOptions())
-
-        assert isinstance(result, ConversionResult)
-        assert client.post.await_count == 1
-        sleep_mock.assert_not_awaited()
-
-    @pytest.mark.asyncio
-    async def test_retries_then_succeeds_on_transient_404(self, tmp_path):
-        """404 → 404 → 200 → returns the 200 result after 2 backoff sleeps."""
-        test_file = tmp_path / "test.pdf"
-        test_file.write_bytes(b"%PDF-1.4 stub")
-
-        client, _ = self._stub_client_with_responses(404, 404, 200)
-        conv = ServeConverter(base_url="http://localhost:5001")
-
-        sleep_mock = AsyncMock()
-        with (
-            patch("infra.serve_converter.httpx.AsyncClient", return_value=client),
-            patch("infra.serve_converter.asyncio.sleep", new=sleep_mock),
-        ):
-            result = await conv.convert(str(test_file), ConversionOptions())
-
-        assert isinstance(result, ConversionResult)
-        assert client.post.await_count == 3
-        # Backoff schedule for retries 1, 2 → 2.0s, 4.0s (base * 2**(attempt-1))
-        sleep_calls = [c.args[0] for c in sleep_mock.await_args_list]
-        assert sleep_calls == [2.0, 4.0]
-
-    @pytest.mark.asyncio
-    async def test_gives_up_after_five_consecutive_404s(self, tmp_path):
-        """5 consecutive 404s → last response surfaced, raises 404 to caller."""
-        test_file = tmp_path / "test.pdf"
-        test_file.write_bytes(b"%PDF-1.4 stub")
-
-        client, _ = self._stub_client_with_responses(404, 404, 404, 404, 404)
-        conv = ServeConverter(base_url="http://localhost:5001")
-
-        sleep_mock = AsyncMock()
-        with (
-            patch("infra.serve_converter.httpx.AsyncClient", return_value=client),
-            patch("infra.serve_converter.asyncio.sleep", new=sleep_mock),
-            pytest.raises(httpx.HTTPStatusError),
-        ):
-            await conv.convert(str(test_file), ConversionOptions())
-
-        assert client.post.await_count == 5
-        # 4 sleeps between the 5 attempts (no sleep after the final attempt).
-        assert sleep_mock.await_count == 4
-
-    @pytest.mark.asyncio
-    async def test_non_404_error_is_not_retried(self, tmp_path):
-        """500 from docling-serve → propagated immediately, no retry."""
-        test_file = tmp_path / "test.pdf"
-        test_file.write_bytes(b"%PDF-1.4 stub")
-
-        client, _ = self._stub_client_with_responses(500)
-        conv = ServeConverter(base_url="http://localhost:5001")
-
-        sleep_mock = AsyncMock()
-        with (
-            patch("infra.serve_converter.httpx.AsyncClient", return_value=client),
-            patch("infra.serve_converter.asyncio.sleep", new=sleep_mock),
-            pytest.raises(httpx.HTTPStatusError),
-        ):
-            await conv.convert(str(test_file), ConversionOptions())
-
-        assert client.post.await_count == 1
-        sleep_mock.assert_not_awaited()
-
-
-# ---------------------------------------------------------------------------
 # Integration — converter wiring in main.py
 # ---------------------------------------------------------------------------
 
@@ -815,6 +718,19 @@ class TestConverterWiring:
             converter = build_converter()
         assert isinstance(converter, ServeConverter)
         assert converter._base_url == "http://serve:5001"
+
+    def test_remote_engine_passes_the_document_timeout(self):
+        # #349 — Docling Serve stops at the same budget as the local engine.
+        from infra.settings import Settings
+
+        with patch(
+            "bootstrap.factories.settings",
+            Settings(conversion_engine="remote", document_timeout=111.0),
+        ):
+            from bootstrap import build_converter
+
+            converter = build_converter()
+        assert converter._document_timeout == 111.0
 
     def test_remote_engine_passes_api_key(self):
         from infra.settings import Settings

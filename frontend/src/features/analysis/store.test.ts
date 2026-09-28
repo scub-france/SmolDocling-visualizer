@@ -249,7 +249,8 @@ describe('useAnalysisStore', () => {
 
     const store = useAnalysisStore()
     await store.run('d1')
-    await vi.advanceTimersByTimeAsync(15 * 60 * 1000)
+    // The 15 minutes start at the first poll that sees it RUNNING (#349).
+    await vi.advanceTimersByTimeAsync(15 * 60 * 1000 + 2000)
 
     expect(store.running).toBe(false)
     expect(store.lastOutcome).toEqual({

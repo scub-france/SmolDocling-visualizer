@@ -80,6 +80,13 @@ class DocumentConverter(Protocol):
         `supports_page_batching` is True."""
         ...
 
+    @property
+    def max_parallel_conversions(self) -> int | None:
+        """How many conversions the engine runs at once, or None when the
+        engine queues extra work itself (Docling Serve). The analysis service
+        never hands it more, and keeps the rest PENDING in its own queue (#349)."""
+        ...
+
 
 class DocumentChunker(Protocol):
     """Port for document chunking.

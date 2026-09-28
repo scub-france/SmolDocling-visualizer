@@ -72,6 +72,14 @@ describe('useI18n', () => {
     expect(t('analyses.progressElapsed', { elapsed: '1:23' })).toBe('Analyse en cours · 1:23')
   })
 
+  it('has the queued analysis key in French and English (#349)', () => {
+    const { t } = useI18n()
+    expect(t('analyses.progressQueued')).toBe('En attente')
+
+    appLocale.value = 'en'
+    expect(t('analyses.progressQueued')).toBe('Queued')
+  })
+
   it('has the analysis progress keys in English', () => {
     appLocale.value = 'en'
 
