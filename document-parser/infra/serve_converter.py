@@ -4,6 +4,8 @@ This adapter implements the DocumentConverter port by calling a remote
 Docling Serve instance's REST API (v1).
 
 API contract based on docling-serve source code:
+- Conversions go through the asynchronous task routes (`infra.serve_tasks`):
+  the synchronous route gives up after 120 s by default (#349)
 - Options are sent as individual multipart form fields (not a JSON blob)
 - Response contains document.md_content, document.html_content, document.json_content
 - json_content is a serialized DoclingDocument with texts[], tables[], pictures[]
@@ -30,23 +32,10 @@ from domain.value_objects import (
     PageDetail,
     PageElement,
 )
+from infra import serve_tasks
 from infra.bbox import to_topleft_list
 
 logger = logging.getLogger(__name__)
-
-_API_PREFIX = "/v1"
-
-# Docling Serve registers the `/v1/convert/*` route decorators at FastAPI
-# import time but returns 404 from the actual handler until its lifespan
-# startup has wired up the converter pipeline (~30s after first launch).
-# Neither `/version` nor `/openapi.json` nor an empty `POST /v1/convert/file`
-# (which validates form schema and answers 422) detects this — only a real
-# multipart upload triggers it. We retry the upload up to 5 times with
-# exponential backoff to absorb that startup window. The retry is scoped
-# tight (only 404 from this endpoint) so a real "route gone" regression
-# would still surface after the backoff exhausts.
-_SERVE_STARTUP_RETRY_ATTEMPTS = 5
-_SERVE_STARTUP_RETRY_BASE_DELAY = 2.0  # 2, 4, 8, 16, 32s — total ~62s max
 
 # Docling Serve label → our element type
 _LABEL_MAP = {
@@ -84,10 +73,14 @@ class ServeConverter:
         base_url: str,
         api_key: str | None = None,
         timeout: float = 600.0,
+        document_timeout: float | None = None,
     ):
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._timeout = timeout
+        # Sent with every conversion, so Docling Serve stops at the same
+        # budget as the local engine (#349).
+        self._document_timeout = document_timeout
 
     def _headers(self) -> dict[str, str]:
         headers: dict[str, str] = {}
@@ -107,87 +100,38 @@ class ServeConverter:
         *,
         page_range: tuple[int, int] | None = None,
     ) -> ConversionResult:
-        """Convert a document by uploading it to Docling Serve.
+        """Convert a document through Docling Serve's asynchronous API (#349).
 
-        The PDF is read into memory through `asyncio.to_thread` so the
-        blocking file read never freezes the FastAPI event loop while a
-        large document is in flight to Docling Serve.
+        The task is submitted, followed until it ends, then its result
+        fetched: unlike the synchronous route, this has no 120 s limit and
+        goes through Docling Serve's queue. The PDF is read through
+        `asyncio.to_thread` so the blocking file read never freezes the
+        FastAPI event loop while a large document is in flight.
         """
         path = Path(file_path)
         content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
-
-        form_data = _build_form_data(options, page_range=page_range)
-        url = f"{self._base_url}{_API_PREFIX}/convert/file"
-
-        file_bytes = await asyncio.to_thread(path.read_bytes)
-
-        response = await self._post_convert_with_startup_retry(
-            url=url,
-            filename=path.name,
-            content_type=content_type,
-            file_bytes=file_bytes,
-            form_data=form_data,
+        form_data = _build_form_data(
+            options, page_range=page_range, document_timeout=self._document_timeout
         )
+        file_bytes = await asyncio.to_thread(path.read_bytes)
+        headers = self._headers()
 
-        if response.status_code >= 400:
-            logger.error(
-                "Docling Serve error %d: %s (form_data=%s)",
-                response.status_code,
-                response.text[:500],
-                {k: v for k, v in form_data.items()},
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
+            task_id = await serve_tasks.submit(
+                client,
+                self._base_url,
+                headers=headers,
+                filename=path.name,
+                content_type=content_type,
+                file_bytes=file_bytes,
+                form_data=form_data,
             )
-        response.raise_for_status()
-        result_data = response.json()
+            await serve_tasks.wait_for_completion(client, self._base_url, task_id, headers=headers)
+            result_data = await serve_tasks.fetch_result(
+                client, self._base_url, task_id, headers=headers
+            )
 
         return _parse_response(result_data)
-
-    async def _post_convert_with_startup_retry(
-        self,
-        *,
-        url: str,
-        filename: str,
-        content_type: str,
-        file_bytes: bytes,
-        form_data: dict[str, str | list[str]],
-    ) -> httpx.Response:
-        """POST the multipart upload, retrying on 404 to absorb docling-serve startup.
-
-        See the module-level note on `_SERVE_STARTUP_RETRY_*` constants.
-        """
-        last_response: httpx.Response | None = None
-        for attempt in range(1, _SERVE_STARTUP_RETRY_ATTEMPTS + 1):
-            async with httpx.AsyncClient(timeout=self._timeout) as client:
-                response = await client.post(
-                    url,
-                    files={"files": (filename, file_bytes, content_type)},
-                    data=form_data,
-                    headers=self._headers(),
-                )
-            last_response = response
-            if response.status_code != 404:
-                return response
-            if attempt == _SERVE_STARTUP_RETRY_ATTEMPTS:
-                logger.error(
-                    "Docling Serve still returning 404 after %d attempts at %s — "
-                    "giving up. Either the route really is gone or startup took "
-                    "longer than ~62s.",
-                    attempt,
-                    url,
-                )
-                return response
-            delay = _SERVE_STARTUP_RETRY_BASE_DELAY * (2 ** (attempt - 1))
-            logger.warning(
-                "Docling Serve returned 404 for %s (attempt %d/%d) — "
-                "likely startup race, retrying in %.0fs",
-                url,
-                attempt,
-                _SERVE_STARTUP_RETRY_ATTEMPTS,
-                delay,
-            )
-            await asyncio.sleep(delay)
-        # Defensive — the loop always returns or sleeps, but mypy needs this.
-        assert last_response is not None
-        return last_response
 
     async def health_check(self) -> bool:
         """Check if Docling Serve is reachable."""
@@ -207,6 +151,7 @@ def _build_form_data(
     options: ConversionOptions,
     *,
     page_range: tuple[int, int] | None = None,
+    document_timeout: float | None = None,
 ) -> dict[str, str | list[str]]:
     """Build form fields matching Docling Serve's multipart form contract.
 
@@ -233,6 +178,8 @@ def _build_form_data(
         # Serve expects page_range as two repeated form fields:
         # page_range=1&page_range=10
         data["page_range"] = [str(page_range[0]), str(page_range[1])]
+    if document_timeout is not None:
+        data["document_timeout"] = str(document_timeout)
     return data
 
 

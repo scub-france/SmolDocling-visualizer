@@ -43,6 +43,7 @@ def build_converter():
             base_url=settings.docling_serve_url,
             api_key=settings.docling_serve_api_key,
             timeout=settings.conversion_timeout,
+            document_timeout=settings.document_timeout,
         )
     from infra.local_converter import LocalConverter
 
