@@ -82,6 +82,16 @@ describe('useI18n', () => {
     expect(t('analyses.progressElapsed', { elapsed: '1:23' })).toBe('Analyzing · 1:23')
   })
 
+  it('has the document preview error in French and English (#352)', () => {
+    const { t } = useI18n()
+    expect(t('workspace.previewUnavailable')).toBe(
+      'Aperçu indisponible : le PDF ne peut pas être lu.',
+    )
+
+    appLocale.value = 'en'
+    expect(t('workspace.previewUnavailable')).toBe('Preview unavailable: the PDF cannot be read.')
+  })
+
   it('has the Parse view show-all keys in French', () => {
     const { t } = useI18n()
     expect(t('parse.showAll')).toBe('Tout afficher')

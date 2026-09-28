@@ -107,6 +107,14 @@ class DocumentResponse(_CamelModel):
     store_links: list[DocStoreLinkResponse] | None = None
 
 
+class PageSizeResponse(_CamelModel):
+    """Size of one page of a document's PDF, in points (#352)."""
+
+    page_number: int
+    width: float
+    height: float
+
+
 class AnalysisResponse(_CamelModel):
     id: str
     document_id: str = ""
