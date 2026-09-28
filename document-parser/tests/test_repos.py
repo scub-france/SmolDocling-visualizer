@@ -154,6 +154,29 @@ class TestAnalysisRepo:
         all_jobs = await analysis_repo.find_all()
         assert len(all_jobs) == 3
 
+    async def test_find_all_summaries_leaves_the_content_out(self, document_repo, analysis_repo):
+        # #354 — light enough to poll while a batch runs.
+        await self._insert_doc(document_repo)
+        job = AnalysisJob(id="job-1", document_id="doc-1")
+        await analysis_repo.insert(job)
+        job.mark_running()
+        job.mark_completed(markdown="# Test", html="<h1>Test</h1>", pages_json="[]")
+        await analysis_repo.update_status(job)
+        await analysis_repo.insert(AnalysisJob(id="job-2", document_id="doc-1"))
+
+        summaries = await analysis_repo.find_all_summaries()
+
+        by_id = {s.id: s for s in summaries}
+        assert set(by_id) == {"job-1", "job-2"}
+        completed = by_id["job-1"]
+        assert completed.status == AnalysisStatus.COMPLETED
+        assert completed.document_filename == "test.pdf"
+        assert isinstance(completed.completed_at, datetime)
+        assert completed.content_markdown is None
+        assert completed.content_html is None
+        assert completed.pages_json is None
+        assert by_id["job-2"].status == AnalysisStatus.PENDING
+
     async def test_update_status(self, document_repo, analysis_repo):
         await self._insert_doc(document_repo)
         job = AnalysisJob(id="job-1", document_id="doc-1")

@@ -163,6 +163,10 @@ class AnalysisService:
         """Return all analysis jobs, newest first."""
         return await self._analysis_repo.find_all()
 
+    async def find_all_summaries(self) -> list[AnalysisJob]:
+        """Return all analysis jobs without their content, newest first (#354)."""
+        return await self._analysis_repo.find_all_summaries()
+
     async def find_by_document(self, document_id: str) -> list[AnalysisJob]:
         """Return analysis jobs for a given document, newest first."""
         return await self._analysis_repo.find_by_document(document_id)

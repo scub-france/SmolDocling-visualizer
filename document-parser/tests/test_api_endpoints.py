@@ -320,6 +320,33 @@ class TestAnalysisEndpoints:
         assert data[0]["documentFilename"] == "test.pdf"
         assert data[0]["status"] == "PENDING"
 
+    def test_list_analysis_summaries(self, client, mock_analysis_service):
+        # #354 — statuses without content, not captured by /{analysis_id}.
+        mock_analysis_service.find_all_summaries = AsyncMock(
+            return_value=[
+                AnalysisJob(
+                    id="j1",
+                    document_id="d1",
+                    document_filename="test.pdf",
+                    progress_current=5,
+                    progress_total=10,
+                ),
+            ]
+        )
+
+        resp = client.get("/api/analyses/summaries")
+
+        assert resp.status_code == 200
+        [summary] = resp.json()
+        assert summary["id"] == "j1"
+        assert summary["documentFilename"] == "test.pdf"
+        assert summary["status"] == "PENDING"
+        assert summary["progressCurrent"] == 5
+        assert summary["progressTotal"] == 10
+        assert "contentMarkdown" not in summary
+        assert "pagesJson" not in summary
+        mock_analysis_service.find_all_summaries.assert_awaited_once()
+
     def test_list_analyses_filtered_by_document(self, client, mock_analysis_service):
         mock_analysis_service.find_all = AsyncMock(return_value=[])
         mock_analysis_service.find_by_document = AsyncMock(

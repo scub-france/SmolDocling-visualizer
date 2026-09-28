@@ -125,6 +125,21 @@ class AnalysisResponse(_CamelModel):
     created_at: str | datetime
 
 
+class AnalysisSummaryResponse(_CamelModel):
+    """An analysis without its content, to follow many statuses at once (#354)."""
+
+    id: str
+    document_id: str
+    document_filename: str | None = None
+    status: str
+    error_message: str | None = None
+    progress_current: int | None = None
+    progress_total: int | None = None
+    started_at: str | datetime | None = None
+    completed_at: str | datetime | None = None
+    created_at: str | datetime
+
+
 class PipelineOptionsRequest(BaseModel):
     """Docling pipeline configuration options."""
 
