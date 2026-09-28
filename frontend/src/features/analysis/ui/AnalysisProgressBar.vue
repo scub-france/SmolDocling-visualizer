@@ -1,5 +1,9 @@
 <template>
-  <div class="analysis-progress" data-e2e="analysis-progress">
+  <div
+    class="analysis-progress"
+    data-e2e="analysis-progress"
+    :data-state="progress.kind === 'queued' ? 'queued' : 'running'"
+  >
     <div
       v-if="progress.kind === 'pages'"
       class="progress-track"
@@ -18,8 +22,9 @@
 
 <script setup lang="ts">
 /**
- * Progress strip of a running analysis (#344): pages done when the backend
- * converts in batches, the time elapsed otherwise.
+ * Progress strip of a running analysis (#344): queued while it waits for its
+ * turn (#349), then pages done when the backend converts in batches, the time
+ * elapsed otherwise.
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { Analysis } from '../../../shared/types'
@@ -42,6 +47,7 @@ onUnmounted(() => {
 const progress = computed(() => analysisProgress(props.analysis, now.value))
 const label = computed(() => {
   const p = progress.value
+  if (p.kind === 'queued') return t('analyses.progressQueued')
   return p.kind === 'pages'
     ? t('analyses.progressPages', { percent: p.percent, done: p.done, total: p.total })
     : t('analyses.progressElapsed', { elapsed: formatElapsed(p.seconds) })

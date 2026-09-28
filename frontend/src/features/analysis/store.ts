@@ -98,6 +98,9 @@ export const useAnalysisStore = defineStore('analysis', () => {
         currentAnalysis.value = updated
         const idx = analyses.value.findIndex((a) => a.id === id)
         if (idx !== -1) analyses.value[idx] = updated
+        // #349 — a queued analysis waits for its turn, however long: the
+        // limit only counts once it runs, as the backend's own budget does.
+        if (updated.status === 'RUNNING' && !pollingTimeout.value) armTimeout(documentId)
         if (updated.status === 'COMPLETED') {
           finishRun({ kind: 'completed', documentId, analysisId: id })
         } else if (updated.status === 'FAILED') {
@@ -113,6 +116,9 @@ export const useAnalysisStore = defineStore('analysis', () => {
         }
       }
     }, 2000)
+  }
+
+  function armTimeout(documentId: string): void {
     pollingTimeout.value = setTimeout(() => {
       if (pollingInterval.value) {
         error.value = 'Analysis timed out'

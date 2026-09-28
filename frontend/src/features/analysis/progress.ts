@@ -4,18 +4,24 @@
  * The backend reports pages done / total only for a batched conversion
  * (`BATCH_PAGE_SIZE`, local engine), after each batch. Without it there is
  * no percentage to show, only the time elapsed — never a made-up one.
+ * An analysis still waiting for its turn is queued (#349).
  * Pure functions, unit-tested without a DOM.
  */
 import type { Analysis } from '../../shared/types'
 
 export type AnalysisProgress =
+  | { kind: 'queued' }
   | { kind: 'pages'; percent: number; done: number; total: number }
   | { kind: 'elapsed'; seconds: number }
 
 export function analysisProgress(
-  analysis: Pick<Analysis, 'progressCurrent' | 'progressTotal' | 'startedAt' | 'createdAt'>,
+  analysis: Pick<
+    Analysis,
+    'status' | 'progressCurrent' | 'progressTotal' | 'startedAt' | 'createdAt'
+  >,
   now: number,
 ): AnalysisProgress {
+  if (analysis.status === 'PENDING') return { kind: 'queued' }
   const total = analysis.progressTotal ?? 0
   if (total > 0) {
     const done = Math.min(Math.max(analysis.progressCurrent ?? 0, 0), total)
