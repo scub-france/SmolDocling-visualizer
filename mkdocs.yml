@@ -51,6 +51,8 @@ exclude_docs: |
   audit/reports/
   design/
   demo/
+  claude-code-commands.md
+  git-workflow/autonomy-mode.md
 
 validation:
   nav:
