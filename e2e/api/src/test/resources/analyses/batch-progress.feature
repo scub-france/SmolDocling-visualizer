@@ -35,19 +35,18 @@ Feature: Batched conversion with progress reporting
     # Cleanup
     * call read('classpath:common/helpers/cleanup.feature') { docId: '#(uploaded.docId)' }
 
-  Scenario: Batched conversion disables document_json
-    # Only meaningful when BATCH_PAGE_SIZE > 0 and pages > BATCH_PAGE_SIZE
-    # Check health to see if batching is possible
-    Given path '/api/health'
-    When method GET
-    Then status 200
-
+  Scenario: Batched conversion keeps the document structure (#344)
+    # The batches are merged back into one Docling document. Only a real test
+    # of the merge when BATCH_PAGE_SIZE > 0 and pages > BATCH_PAGE_SIZE
+    # (progressTotal > 0); without batching it must hold all the more.
     * def uploaded = call read('classpath:common/helpers/upload.feature') { file: 'large.pdf' }
     * def analysis = call read('classpath:common/helpers/analyze.feature') { docId: '#(uploaded.docId)' }
     * match analysis.response.status == 'COMPLETED'
+    * match analysis.response.hasDocumentJson == true
 
-    # If batched, hasDocumentJson should be false
-    # If not batched (BATCH_PAGE_SIZE=0), hasDocumentJson should be true
-    * match analysis.response.hasDocumentJson == '#boolean'
+    Given path '/api/documents', uploaded.docId, 'tree'
+    When method GET
+    Then status 200
+    And assert karate.sizeOf(response) > 0
 
     * call read('classpath:common/helpers/cleanup.feature') { docId: '#(uploaded.docId)' }

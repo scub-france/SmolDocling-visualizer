@@ -64,6 +64,24 @@ describe('useI18n', () => {
     expect(t('history.emptyDocs')).toBe('No documents yet. Upload a document from the library.')
   })
 
+  it('has the analysis progress keys in French', () => {
+    const { t } = useI18n()
+    expect(t('analyses.progressPages', { percent: 40, done: 10, total: 25 })).toBe(
+      '40 % · page 10 / 25',
+    )
+    expect(t('analyses.progressElapsed', { elapsed: '1:23' })).toBe('Analyse en cours · 1:23')
+  })
+
+  it('has the analysis progress keys in English', () => {
+    appLocale.value = 'en'
+
+    const { t } = useI18n()
+    expect(t('analyses.progressPages', { percent: 40, done: 10, total: 25 })).toBe(
+      '40% · page 10 / 25',
+    )
+    expect(t('analyses.progressElapsed', { elapsed: '1:23' })).toBe('Analyzing · 1:23')
+  })
+
   it('has the Parse view show-all keys in French', () => {
     const { t } = useI18n()
     expect(t('parse.showAll')).toBe('Tout afficher')

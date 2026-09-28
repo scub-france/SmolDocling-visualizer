@@ -517,6 +517,22 @@ class TestServeConverter:
         conv = ServeConverter(base_url="http://localhost:5001/")
         assert conv._base_url == "http://localhost:5001"
 
+    async def test_merge_batches_merges_without_a_document(self):
+        # Not reached while Serve does not batch, but the port requires it (#344).
+        conv = ServeConverter(base_url="http://localhost:5001")
+        batch = ConversionResult(
+            page_count=1,
+            content_markdown="# B",
+            content_html="<html><body><p>B</p></body></html>",
+            pages=[],
+            document_json="{}",
+        )
+
+        merged = await conv.merge_batches([batch, batch])
+
+        assert merged.page_count == 2
+        assert merged.document_json is None
+
 
 # ---------------------------------------------------------------------------
 # Integration tests — HTTP calls (mocked)

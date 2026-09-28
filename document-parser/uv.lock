@@ -864,7 +864,7 @@ reasoning = [
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20.0,<1.0.0" },
     { name = "cryptography", specifier = ">=43.0.0,<46.0.0" },
-    { name = "docling-core", extras = ["chunking"], specifier = ">=2.0.0,<3.0.0" },
+    { name = "docling-core", extras = ["chunking"], specifier = ">=2.65.2,<3.0.0" },
     { name = "fastapi", specifier = ">=0.115.0,<1.0.0" },
     { name = "httpx", specifier = ">=0.27.0,<1.0.0" },
     { name = "neo4j", specifier = ">=5.15.0,<6.0.0" },
@@ -872,7 +872,7 @@ requires-dist = [
     { name = "pdf2image", specifier = ">=1.17.0,<2.0.0" },
     { name = "pillow", specifier = ">=10.0.0,<11.0.0" },
     { name = "pypdfium2", specifier = ">=4.0.0,<5.0.0" },
-    { name = "python-multipart", specifier = ">=0.0.12" },
+    { name = "python-multipart", specifier = ">=0.0.12,<1.0.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32.0,<1.0.0" },
 ]
 

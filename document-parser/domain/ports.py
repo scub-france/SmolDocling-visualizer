@@ -74,6 +74,12 @@ class DocumentConverter(Protocol):
         orchestrator passes the full document through in one call."""
         ...
 
+    async def merge_batches(self, results: list[ConversionResult]) -> ConversionResult:
+        """Merge the results of page-batched `convert` calls, in page order,
+        into the result a single call would have produced. Only called when
+        `supports_page_batching` is True."""
+        ...
+
 
 class DocumentChunker(Protocol):
     """Port for document chunking.

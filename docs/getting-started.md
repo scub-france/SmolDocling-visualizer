@@ -73,10 +73,7 @@ flowchart LR
     style Compose fill:#FF57220A,stroke:#FF572266,stroke-width:1px,stroke-dasharray:4 4
 ```
 
-Two things to know before your first analysis:
-
-- **The first analysis is slow.** Docling downloads its models from HuggingFace at that moment.
-- **Long PDFs need `BATCH_PAGE_SIZE=0`.** The compose file sets it to 10, which splits PDFs of more than 10 pages and loses their structure: the tree stays empty and Ask cannot read them. Put `BATCH_PAGE_SIZE=0` in a `.env` file next to `docker-compose.yml`.
+The first analysis is slow: Docling downloads its models from HuggingFace at that moment.
 
 To use Docling Serve instead of running Docling in the backend:
 
