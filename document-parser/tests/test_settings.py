@@ -20,7 +20,7 @@ class TestSettingsDefaults:
         assert s.max_file_size_mb == 50
         assert s.max_paste_image_size_mb == 10
         assert s.paste_allowed_image_types == ["image/png", "image/jpeg", "image/webp"]
-        assert s.batch_page_size == 10
+        assert s.batch_page_size == 0
         assert s.opensearch_default_limit == 1000
         assert s.upload_dir == "./uploads"
         assert s.db_path == "./data/docling_studio.db"
@@ -231,15 +231,6 @@ class TestSettingsFromEnv:
         assert s.conversion_engine == "local"
         assert s.conversion_timeout == 900
         assert s.max_page_count == 0
-
-    def test_batches_of_ten_pages_by_default(self, monkeypatch):
-        # #349 — long PDFs get progress and one timeout budget per batch.
-        monkeypatch.delenv("BATCH_PAGE_SIZE", raising=False)
-        assert Settings.from_env().batch_page_size == 10
-
-    def test_zero_batch_page_size_converts_in_one_pass(self, monkeypatch):
-        monkeypatch.setenv("BATCH_PAGE_SIZE", "0")
-        assert Settings.from_env().batch_page_size == 0
 
     def test_cors_origins_split(self, monkeypatch):
         monkeypatch.setenv("CORS_ORIGINS", "http://a.com,http://b.com,http://c.com")

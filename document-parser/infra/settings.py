@@ -25,7 +25,7 @@ class Settings:
     max_file_size: int = 0  # 0 = unlimited (Docling-level, bytes)
     max_file_size_mb: int = 50  # upload limit in MB (0 = unlimited)
     rate_limit_rpm: int = 100  # requests per minute per IP (0 = disabled)
-    batch_page_size: int = 10  # pages per batch (0 = one pass)
+    batch_page_size: int = 0  # 0 = disabled, > 0 = pages per batch
     opensearch_url: str = ""  # empty = disabled
     embedding_url: str = ""  # empty = disabled (e.g. http://localhost:8001)
     neo4j_uri: str = ""  # empty = disabled (e.g. bolt://neo4j:7687)
@@ -162,11 +162,11 @@ class Settings:
             max_file_size=int(os.environ.get("MAX_FILE_SIZE", "0")),
             max_file_size_mb=int(os.environ.get("MAX_FILE_SIZE_MB", "50")),
             rate_limit_rpm=int(os.environ.get("RATE_LIMIT_RPM", "100")),
-            # 10 by default, like the dataclass (#349); 0 converts in one pass.
-            # Batching bounds memory, reports progress after each batch and
-            # gives each batch its own DOCUMENT_TIMEOUT budget; the local
-            # converter merges the batch documents back into one (#344).
-            batch_page_size=int(os.environ.get("BATCH_PAGE_SIZE", "10")),
+            # 0 = batching disabled (matches dataclass default). Batching
+            # preserves memory on very large docs and reports progress after
+            # each batch; the local converter merges the batch documents back
+            # into one (#344). Enable explicitly for memory-bound deploys.
+            batch_page_size=int(os.environ.get("BATCH_PAGE_SIZE", "0")),
             opensearch_url=os.environ.get("OPENSEARCH_URL", ""),
             embedding_url=os.environ.get("EMBEDDING_URL", ""),
             neo4j_uri=os.environ.get("NEO4J_URI", ""),
