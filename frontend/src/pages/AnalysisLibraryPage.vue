@@ -42,7 +42,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="analysis in filteredAnalyses" :key="analysis.id">
+            <tr
+              v-for="analysis in filteredAnalyses"
+              :key="analysis.id"
+              data-e2e="analysis-row"
+              :data-document-id="analysis.documentId"
+            >
               <td class="date-cell">
                 <time :datetime="analysis.createdAt">{{ formatDate(analysis.createdAt) }}</time>
               </td>
@@ -55,8 +60,14 @@
                 <span class="analysis-id" :title="analysis.id">{{ shorten(analysis.id, 10) }}</span>
               </td>
               <td>
-                <span class="status" :class="`status--${analysis.status.toLowerCase()}`">
-                  {{ analysis.status }}
+                <span
+                  class="status"
+                  :class="`status--${analysis.status.toLowerCase()}`"
+                  data-e2e="analysis-status"
+                  :data-status="analysis.status"
+                  :title="analysis.errorMessage ?? undefined"
+                >
+                  {{ statusLabel(analysis) }}
                 </span>
               </td>
               <td class="actions-column" @click.stop>
@@ -94,11 +105,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { analysisProgress } from '../features/analysis/progress'
 import { useAnalysisStore } from '../features/analysis/store'
 import { useI18n } from '../shared/i18n'
 import { ROUTES } from '../shared/routing/names'
+import type { Analysis } from '../shared/types'
 
 const store = useAnalysisStore()
 const { t } = useI18n()
@@ -121,6 +134,16 @@ const filteredAnalyses = computed(() => {
 
 async function load(): Promise<void> {
   await store.load()
+  // #354 — pending and running analyses refresh until they end.
+  store.followActive()
+}
+
+// A batched analysis reports its pages done: show the share next to RUNNING.
+function statusLabel(analysis: Analysis): string {
+  if (analysis.status !== 'RUNNING') return analysis.status
+  const progress = analysisProgress(analysis, Date.now())
+  if (progress.kind !== 'pages') return analysis.status
+  return `${analysis.status} · ${t('analyses.statusPercent', { percent: progress.percent })}`
 }
 
 async function deleteAnalysis(id: string): Promise<void> {
@@ -143,6 +166,7 @@ function shorten(value: string, length: number): string {
 }
 
 onMounted(load)
+onBeforeUnmount(() => store.stopFollowing())
 </script>
 
 <style scoped>

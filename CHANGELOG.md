@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - **Parse view — Show all** (#338): selecting an element dims every other bbox, and nothing in the UI led back out. A **Show all** button in the LAYERS bar now clears the selection — tree row, Properties panel and Ask trace step — so every visible bbox is drawn at full strength with its label again. Hidden layers stay hidden, and the preview keeps its scroll position.
 - **Parse view — Hide boxes** (#343): seeing the bare page meant clicking every LAYERS chip, then clicking them all again to get the overlay back. A **Hide boxes** toggle left of the chips now hides every element type in one click, and **Show boxes** brings them all back. The toggle follows the chips, so hiding them all by hand flips it too. **Show all** (#338) still only clears the selection.
+- **Batch analysis** (#354): analysing a corpus meant opening each document and clicking **New analysis**. The documents library now has a checkbox per row and a select-all checkbox. **Analyze** starts one analysis per selected document and opens the Analysis library, which refreshes their statuses until they end, and shows the percentage of batched ones. The statuses come from a new light `GET /api/analyses/summaries`, one request every 3 s, because the full list carries every analysis's content.
 
 ### Changed
 
