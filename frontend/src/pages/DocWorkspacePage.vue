@@ -21,6 +21,7 @@
           </button>
         </template>
       </DocWorkspaceHeader>
+      <AnalysisProgressBar v-if="runningAnalysis" :analysis="runningAnalysis" />
 
       <div class="viewer-content" data-e2e="document-viewer">
         <div class="viewer-toolbar">
@@ -62,6 +63,7 @@ import { truncate } from '../shared/breadcrumb/text'
 import type { Crumb } from '../shared/breadcrumb/types'
 import { useI18n } from '../shared/i18n'
 import { ROUTES } from '../shared/routing/names'
+import AnalysisProgressBar from '../features/analysis/ui/AnalysisProgressBar.vue'
 import DocWorkspaceHeader from '../features/document/ui/DocWorkspaceHeader.vue'
 import PagePreview from '../features/document/ui/PagePreview.vue'
 
@@ -89,6 +91,12 @@ const crumbs = computed<Crumb[]>(() => [
   },
 ])
 useCrumbs(crumbs)
+
+// #344 — the analysis running on this document, whose progress shows under the header.
+const runningAnalysis = computed(() => {
+  const analysis = analysisStore.currentAnalysis
+  return analysisStore.running && analysis?.documentId === props.id ? analysis : null
+})
 
 async function loadDoc(): Promise<void> {
   loadingDoc.value = true
