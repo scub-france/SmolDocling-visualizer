@@ -74,7 +74,7 @@ To use Docling Serve instead of running Docling in the backend:
 CONVERSION_MODE=remote docker compose --profile remote up --build
 ```
 
-Other optional services (OpenSearch, Neo4j) are described in [Configuration](configuration.md#optional-services).
+OpenSearch and Neo4j serve ingestion, which is deprecated and goes away in 0.8.0. If you still need them, see [Configuration](configuration.md#ingestion-deprecated).
 
 ## Enable Ask
 

@@ -41,13 +41,13 @@ Features are in `src/test/resources/`, one folder per area:
 - `documents/`: upload, size limit, read, delete, page preview. Tagged `@regression`.
 - `analyses/`: analysis jobs, pipeline options, batching, rechunking, deletion. Tagged `@regression`.
 - `workflows/`: journeys across documents and analyses. Tagged `@e2e`.
-- `ingestion/`: chunks sent to OpenSearch. Tagged `@e2e @ingestion`.
+- `ingestion/`: chunks sent to OpenSearch. Tagged `@e2e @ingestion`. Deprecated, removed in 0.8.0 with ingestion.
 - `common/helpers/`: callable helpers to upload, analyze and clean up. Tagged `@ignore`.
 - `common/data/`: JSON schemas, data-driven cases, and the generated PDFs (not in git).
 
 `E2ERunner.java` has two methods. `testAll` runs `health/`, `documents/`, `analyses/` and `workflows/`. `testSmoke` runs the `@smoke` scenarios of `health/`. Maven runs both, and `--tags` replaces the tags of each, so the health scenarios run twice.
 
-No runner scans `ingestion/`, so nothing runs it. To run it, start the ingestion services (see [Configuration](../../docs/configuration.md#optional-services)) and pass the folder: `-Dkarate.options="--tags @ingestion classpath:ingestion"`.
+No runner scans `ingestion/`, so nothing runs it. To run it, start the ingestion services (see [Configuration](../../docs/configuration.md#ingestion-deprecated)) and pass the folder: `-Dkarate.options="--tags @ingestion classpath:ingestion"`.
 
 ## Tags in CI
 

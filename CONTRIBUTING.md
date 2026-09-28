@@ -29,10 +29,12 @@ Open <http://localhost:3000>. The frontend reloads on save (Vite) and so does th
 | Add this profile | To get |
 |------------------|--------|
 | `remote` | Docling Serve. Also set `CONVERSION_MODE=remote`. |
-| `graph` | Neo4j |
-| `ingestion` | OpenSearch, OpenSearch Dashboards, the embedding service and Neo4j |
+| `graph` | Neo4j. Deprecated. |
+| `ingestion` | OpenSearch, OpenSearch Dashboards, the embedding service and Neo4j. Deprecated. |
 
-Example: `COMPOSE_PROFILES=default,graph`. The dev file does not connect the backend to these services on its own. Put their addresses in `.env`:
+Example: `COMPOSE_PROFILES=default,remote`.
+
+`graph` and `ingestion` are deprecated: they go away with ingestion in 0.8.0. The dev file does not connect the backend to their services on its own. Put their addresses in `.env`:
 
 ```bash
 OPENSEARCH_URL=http://opensearch:9200

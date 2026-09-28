@@ -47,7 +47,7 @@ These are starting values. **Settings** › **Reasoning** in the app can change 
 | Variable | Default | What it does |
 |----------|---------|--------------|
 | `RAG_PIPELINE_ENABLED` | `true` | The Docs and Runs pages. |
-| `STUDIO_MODE_ENABLED` | `false` | The older Studio pages (`/studio`, `/history`, `/documents`, `/search`), which still hold chunking and ingestion. |
+| `STUDIO_MODE_ENABLED` | `false` | The older Studio pages (`/studio`, `/history`, `/documents`, `/search`), which still hold chunking and ingestion (deprecated). |
 
 At least one of the two must be `true`.
 
@@ -58,12 +58,16 @@ flowchart LR
     Parser[document-parser]
     Parser -.->|remote engine| Serve[Docling Serve]
     Parser -.->|Ask| Ollama
-    Parser -.->|ingestion| Embedding[Embedding service]
-    Parser -.->|ingestion| OpenSearch
-    Parser -.->|ingestion| Neo4j
+    Parser -.->|ingestion, deprecated| Embedding[Embedding service]
+    Parser -.->|ingestion, deprecated| OpenSearch
+    Parser -.->|ingestion, deprecated| Neo4j
 ```
 
 None of them is needed to import and analyze PDFs.
+
+### Ingestion (deprecated)
+
+> **Deprecated.** Ingestion will be removed in 0.8.0, with everything built on it: the embedding service, OpenSearch, Neo4j and its graph view, the stores and the chunk search. Avoid it in new setups.
 
 Ingestion sends chunks to OpenSearch or Neo4j. It turns on when `EMBEDDING_URL` is set together with `OPENSEARCH_URL` or `NEO4J_URI`. In 0.7.3 only the older Studio pages use it, so it also needs `STUDIO_MODE_ENABLED=true`.
 

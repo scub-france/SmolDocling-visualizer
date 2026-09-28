@@ -10,16 +10,16 @@ flowchart LR
     Back --> Docling["Docling, in the backend"]
     Back -.-> Serve["Docling Serve (remote engine)"]
     Back -.-> Ollama["Ollama (Ask)"]
-    Back -.-> Stores["OpenSearch, Neo4j (ingestion)"]
+    Back -.-> Stores["OpenSearch, Neo4j (ingestion, deprecated)"]
 ```
 
-Dotted lines are optional. The published image puts nginx and the backend in one container (root `Dockerfile`). Docker Compose runs them as two containers.
+Dotted lines are optional. Ingestion (OpenSearch, Neo4j) is deprecated and goes away in 0.8.0. The published image puts nginx and the backend in one container (root `Dockerfile`). Docker Compose runs them as two containers.
 
 | Folder | Content |
 |--------|---------|
 | `frontend/` | The web app: Vue 3, TypeScript, Vite, Pinia |
 | `document-parser/` | The backend: FastAPI, Docling, SQLite |
-| `embedding-service/` | Turns text into vectors, for ingestion only |
+| `embedding-service/` | Turns text into vectors, for ingestion only. Deprecated, removed in 0.8.0 |
 | `e2e/` | End-to-end tests: Karate for the API, Karate UI in Chrome |
 | `docs/` | This documentation, design docs, audit checklists |
 | `experiments/`, `scripts/` | Research scripts and the demo recorder, not part of the app |
@@ -56,10 +56,10 @@ flowchart TB
 
 | Prefix | What it serves |
 |--------|----------------|
-| `/api/documents` | Documents, their chunks, versions, graph, and Ask (`POST /api/documents/{id}/reasoning`) |
+| `/api/documents` | Documents, their chunks, versions, graph (Neo4j, deprecated), and Ask (`POST /api/documents/{id}/reasoning`) |
 | `/api/analyses` | Analyses: start, read, delete |
-| `/api/stores` | Ingestion targets (OpenSearch, Neo4j) |
-| `/api/ingestion` | Sending chunks to stores, when ingestion is on |
+| `/api/stores` | Ingestion targets (OpenSearch, Neo4j). Deprecated, removed in 0.8.0 |
+| `/api/ingestion` | Sending chunks to stores, when ingestion is on. Deprecated, removed in 0.8.0 |
 | `/api/config` | The reasoning settings edited in **Settings** |
 | `/api/health` | Status, engine, version, and the flags the frontend reads |
 

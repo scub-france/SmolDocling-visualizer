@@ -94,7 +94,7 @@ There is no undo.
 These features are in the code but no default screen reaches them in 0.7.3:
 
 - chunking (splitting the text into pieces for a RAG pipeline),
-- sending chunks to OpenSearch or Neo4j,
-- searching the chunks you sent.
+- sending chunks to OpenSearch or Neo4j (deprecated, removed in 0.8.0),
+- searching the chunks you sent (deprecated, removed in 0.8.0).
 
 The older **Studio** pages still offer them. Start the server with `STUDIO_MODE_ENABLED=true` and open `/studio`. See [Configuration](configuration.md#feature-switches).

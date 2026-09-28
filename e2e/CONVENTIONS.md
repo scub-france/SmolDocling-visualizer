@@ -166,7 +166,7 @@ Never `waitFor()` an element that might not appear, such as a spinner that shows
 | `@smoke` | API `health/` | `ci.yml` on every run, and `release-gate.yml` |
 | `@regression` | API `documents/` and `analyses/`, and some UI features | API: `ci.yml` on pull requests to `release/*`, and `release-gate.yml`. UI: no CI job. |
 | `@e2e` | API `workflows/` and `ingestion/` | Same as API `@regression`, except `ingestion/`, which no runner scans |
-| `@ingestion` | API `ingestion/`, which needs OpenSearch and the embedding service | No CI job |
+| `@ingestion` | API `ingestion/`, which needs OpenSearch and the embedding service. Deprecated, removed in 0.8.0 | No CI job |
 | `@critical` | A few core UI journeys | `ci.yml` on pushes to `main`, and `release-gate.yml` on pull requests to `main` |
 | `@ui` | Every UI feature | No CI job. Run them by hand with `UIRunner#testLocal`. |
 | `@reasoning-off` | UI scenarios that expect Ask to be off (the default) | Nothing selects it. It records the assumption. |

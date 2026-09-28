@@ -17,7 +17,7 @@ Two settings keep this contained:
 - Both Dockerfiles declare `ARG BAKE_MODELS=false`, so every other build leaves it off.
 - `release.yml` turns it on for the `local` target only.
 
-The embedding service has its own switch, `BAKE_MODEL`, also `false` by default. No pipeline turns it on.
+The embedding service (deprecated with ingestion, removed in 0.8.0) has its own switch, `BAKE_MODEL`, also `false` by default. No pipeline turns it on.
 
 ## Where downloads happen
 
